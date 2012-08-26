@@ -12,10 +12,7 @@ directory for all your classes and register the loader.
 
 ```php
 <?php
-
-use Rose\ClassLoader\ClassPathLoader;
-
-$loader = new ClassPathLoader();
+$loader = new Rose\ClassLoader\ClassPathLoader();
 $loader->addLibraryPath('/path/to/vendors/');
 $loader->register();
 ```
@@ -28,10 +25,7 @@ Alternatively, you can specify a specific path to some vendor using the
 
 ```php
 <?php
-
-use Rose\ClassLoader\ClassPathLoader;
-
-$loader = new ClassPathLoader();
+$loader = new Rose\ClassLoader\ClassPathLoader();
 $loader->addVendorPath('Vendor', __DIR__ . '/class/vendor/');
 $loader->register();
 ```
