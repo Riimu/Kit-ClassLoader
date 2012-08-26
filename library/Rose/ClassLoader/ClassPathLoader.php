@@ -12,6 +12,7 @@ namespace Rose\ClassLoader;
  * separators and underscores in the class name are assumed to mean folders
  * in the file system.
  *
+ * @license http://opensource.org/licenses/mit-license.php MIT License
  * @author Riikka Kalliomäki <riikka.kalliomaki@gmail.com>
  */
 class ClassPathLoader
@@ -206,10 +207,10 @@ class ClassPathLoader
     /**
      * Attemps to load the class from any known allowed paths.
      *
-     * In the name of the class, both underscores and backslashes are treated as
-     * namespace separators. Namespaces are used to determine the folders where
-     * the class resides and the name of the class is used to determine the file
-     * name.
+     * The full name of the class is treated according to PSR-0. The namespace
+     * separators in the class are essentially turned into directory separators
+     * as are the underscores in the name of the class (but not in the
+     * namespaces).
      *
      * The loader will first attempt to look for the file in any registered
      * vendor path. If the class matches multiple vendor paths (i.e. you have
@@ -222,11 +223,12 @@ class ClassPathLoader
      *
      * Exceptions can be thrown, if allowed, when either the class matched any
      * registered vendor, but the class could not be found or if a matching file
-     * was found but it did not actually contains the class.
+     * was found but it did not actually contain the class.
      *
      * @param string $class Full name of the class
      * @return boolean True if the class was loaded, false otherwise
-     * @throws RuntimeException If file was expected to be found but did not load
+     * @throws \RuntimeException If file was expected to be found but did not load
+     * @throws \InvalidArgumentException If the class already exists
      */
     public function loadClass($class)
     {
@@ -260,7 +262,7 @@ class ClassPathLoader
      * @param string $class Name of the class
      * @return array Class name exploded into path parts
      */
-    protected function getParts($class)
+    private function getParts($class)
     {
         $parts = explode('\\', ltrim($class, '\\'));
         $class = explode('_', array_pop($parts));
@@ -273,7 +275,7 @@ class ClassPathLoader
      * @param string $class Original name of the class
      * @param array $parts Separated parts from the class name
      * @return boolean True if loaded succesfully, false if not
-     * @throws RuntimeException If the class was expected, but not found
+     * @throws \RuntimeException If the class was expected, but not found
      */
     private function loadFromVendorPath($vendor, $class, array $parts)
     {
@@ -303,7 +305,6 @@ class ClassPathLoader
      * @param array $paths Paths where to look for the class file
      * @param array $parts Separated parts of the class name
      * @return boolean True if the class was loaded, false if not
-     * @throws RuntimeException If the file was included, but the class was not loaded
      */
     private function loadClassFromPaths($class, array $paths, array $parts)
     {
@@ -315,21 +316,33 @@ class ClassPathLoader
                 $file = $fullPath . $extension;
 
                 if (file_exists($file)) {
-                    require_once $file;
-
-                    if (!class_exists($class, false)) {
-                        if ($this->throwOnFileError) {
-                            throw new \RuntimeException("The class '$class' did not exist in '$file'");
-                        } else {
-                            return false;
-                        }
-                    }
-
-                    return true;
+                    return $this->loadClassFromFile($class, $file);
                 }
             }
         }
 
         return false;
+    }
+
+    /**
+     * Loads class from a file.
+     * @param string $class Full name of the class
+     * @param string $file File to load
+     * @return boolean True if the class was loaded, false if not
+     * @throws \RuntimeException If the class does not exist in the file
+     */
+    private function loadClassFromFile ($class, $file)
+    {
+        require $file;
+
+        if (!class_exists($class, false)) {
+            if ($this->throwOnFileError) {
+                throw new \RuntimeException("The class '$class' did not exist in '$file'");
+            } else {
+                return false;
+            }
+        }
+
+        return true;
     }
 }
