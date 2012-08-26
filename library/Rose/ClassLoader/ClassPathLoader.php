@@ -308,7 +308,8 @@ class ClassPathLoader
     private function loadClassFromPaths($class, array $paths, array $parts)
     {
         foreach ($paths as $path) {
-            $fullPath = implode($this->directorySeparator, array_merge(array($path), $parts));
+            $fullPath = $path . $this->directorySeparator .
+                implode($this->directorySeparator, $parts);
 
             foreach ($this->fileExtensions as $extension) {
                 $file = $fullPath . $extension;
