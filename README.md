@@ -26,7 +26,7 @@ Alternatively, you can specify a specific path to some vendor using the
 ```php
 <?php
 $loader = new Rose\ClassLoader\ClassPathLoader();
-$loader->addVendorPath('Vendor', __DIR__ . '/class/vendor/');
+$loader->addVendorPath('SomeVendor', '/path/to/vendors/SomeVendor/');
 $loader->register();
 ```
 
