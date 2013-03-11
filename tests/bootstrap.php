@@ -1,7 +1,7 @@
 <?php
 
-require_once '../library/Rose/ClassLoader/ClassPathLoader.php';
+require_once '../src/riimu/kit/ClassLoader/BasePathLoader.php';
 
-define('CLASS_BASE', dirname(__FILE__) . DIRECTORY_SEPARATOR . 'classes');
+define('CLASS_BASE', __DIR__ . DIRECTORY_SEPARATOR . 'classes');
 
 ?>
