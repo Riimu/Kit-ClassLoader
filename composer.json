@@ -1,5 +1,6 @@
 {
     "name": "riimu/kit-classloader",
+    "type": "library",
     "description": "Class autoloading with support for PSR-0 autoloading",
     "keywords": ["autoloading", "psr-0"],
     "license": "MIT",
@@ -11,12 +12,12 @@
             "role": "Developer"
         }
     ],
-    "require" : {
-        "PHP" : ">=5.4.0"
+    "require": {
+        "php": ">=5.4.0"
     },
     "autoload": {
         "psr-0": {
-            "riimu\kit\ClassLoader" : "src/"
+            "riimu\kit\ClassLoader": "src"
         }
     }
 }
