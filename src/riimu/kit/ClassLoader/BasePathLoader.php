@@ -5,11 +5,15 @@ namespace riimu\kit\ClassLoader;
 /**
  * Autoloader for PSR-0 compliant namespace based folder structures.
  *
- * BasePathLoader is PSR-0 compliant autoloader for classes, interfaces and
- * traits. Classes are loaded from files using folder structures based on their
- * namespaces (or faux namespaces by using underscore in class names).
- * Additionally, multiple and separate paths can defined for different sub
- * namespaces.
+ * BasePathLoader is PSR-0 compliant autoloader for classes. Classes are loaded
+ * from files using folder structures based on their namespaces (or faux
+ * namespaces by using underscore in class names). Additionally, multiple and
+ * separate paths can defined for different sub namespaces.
+ *
+ * While namespaces and class names are case insensitive in PHP, this autoloader
+ * will treat all definitions as case sensitive due to the fact that numerous
+ * file systems are case sensitive. While only classes are mentioned, everything
+ * in the autoloader also applies to interfaces and traits.
  *
  * @author Riikka Kalliomäki <riikka.kalliomaki@gmail.com>
  * @copyright Copyright (c) 2013, Riikka Kalliomäki
@@ -89,7 +93,7 @@ class BasePathLoader
 
     /**
      * Registers this instance as a class autoloader.
-     * @return boolean Whether the registration was succesful or not
+     * @return boolean True if the registration was succesful, false if not
      */
     public function register()
     {
@@ -98,7 +102,7 @@ class BasePathLoader
 
     /**
      * Unregisters this instance as a class autoloader.
-     * @return boolean True if the loader was succesfully unregistered, false otherwise
+     * @return boolean True if the unregistration was succesful, false otherwise
      */
     public function unregister()
     {
@@ -115,8 +119,11 @@ class BasePathLoader
     }
 
     /**
-     * Tells whether to look for classes in include paths.
-     * @param boolean $enabled True to look for, false to not
+     * Tells whether you want to look for classes in include_path or not.
+     *
+     * Defaults to true.
+     *
+     * @param boolean $enabled True to use include_path, false to not use
      */
     public function setLoadFromIncludePath($enabled)
     {
@@ -124,7 +131,10 @@ class BasePathLoader
     }
 
     /**
-     * Sets exceptions if the class does not exist in an included file.
+     * Enables exceptions if the class does not exist in an included file.
+     *
+     * Defaults to true.
+     *
      * @param boolean $enabled True to throw an exception, false to not
      */
     public function setThrowOnMissingClass($enabled)
@@ -133,11 +143,13 @@ class BasePathLoader
     }
 
     /**
-     * Sets exceptions if class did not exist in namespace specific path.
+     * Enables exceptions if class did not exist in namespace specific path.
      *
      * When enabled and a namespace specific path is defined for a class, an
      * exception will be thrown if the class could not be loaded from any
-     * path that defined for namespaces that exist in the class.
+     * path defined for any namespace that matches the class.
+     *
+     * Defaults to false.
      *
      * @param boolean $enabled True to throw an exception, false to not
      */
@@ -147,8 +159,11 @@ class BasePathLoader
     }
 
     /**
-     * Sets list of file extensions (dot included) to look for.
-     * @param array $extensions List of file extensions to use for looking files
+     * Sets list of dot included file extensions to use for inclusion.
+     *
+     * Defaults to ['.php']
+     *
+     * @param array $extensions Array of dot included file extensions to use
      */
     public function setFileExtensions(array $extensions)
     {
@@ -156,7 +171,7 @@ class BasePathLoader
     }
 
     /**
-     * Adds a path where to look for any loaded class.
+     * Adds a path where to look for all classes.
      * @param string|array $path Single path or multiple paths
      */
     public function addBasePath($path)
@@ -170,7 +185,14 @@ class BasePathLoader
      * The paths can be provided as a string containing a single path or an
      * array containing multiple paths. Additionally, instead of providing
      * two arguments, you can provide a single array, where keys indicate
-     * namespaces and the values are the paths.
+     * namespaces and the values are the paths. The namespace may contain any
+     * number of sub namespaces and even the name of the class.
+     *
+     * Note that the path must point to base path for the loaded class. For
+     * example, if the classes for the namespace "vendor\foo\bar" are in
+     * "/usr/lib/vendor/foo/bar", the you could call the function like
+     *
+     * <pre>$loader->addNamespacePath('vendor\foo\bar', '/usr/lib')</pre>
      *
      * @param string|array $namespace Namespace or array definition
      * @param string|array $path Single path or multiple paths
@@ -216,13 +238,14 @@ class BasePathLoader
      *
      * The name of the class is treated according to PSR-0. Namespace separators
      * and underscores in the class name are replace with directory separators.
-     * The file is then looked in any path added for that spesific namespace,
-     * in any general base path or from include path, if allowed, in that order.
+     * The file is then searched in any path added for that spesific namespace,
+     * in any general base path or in include_path, if allowed, in that order.
      *
      * If enabled, exceptions can be thrown if an included file does not contain
      * the class it is supposed to contain. Additionally, an exception can be
      * thrown if a namespace specific path existed for that class, but that
-     * class was not found in any of those paths.
+     * class was not found in any of those paths. Loading a class that already
+     * exists will also cause an exception.
      *
      * @param string $class Full name of the class
      * @return boolean True if the class was loaded, false otherwise
