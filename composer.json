@@ -1,0 +1,22 @@
+{
+    "name": "riimu/kit-classloader",
+    "description": "Class autoloading with support for PSR-0 autoloading",
+    "keywords": ["autoloading", "psr-0"],
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Riikka Kalliomäki",
+            "email": "riikka.kalliomaki@gmail.com",
+            "homepage": "http://riimu.net",
+            "role": "Developer"
+        }
+    ],
+    "require" : {
+        "PHP" : ">=5.4.0"
+    },
+    "autoload": {
+        "psr-0": {
+            "riimu\kit\ClassLoader" : "src/"
+        }
+    }
+}
