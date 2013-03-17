@@ -1,8 +1,8 @@
 <?php
 
-include __DIR__ . '/../src/riimu/kit/ClassLoader/BasePathLoader.php';
+include __DIR__ . '/../src/Riimu/Kit/ClassLoader/BasePathLoader.php';
 
-$loader = new riimu\kit\ClassLoader\BasePathLoader();
+$loader = new Riimu\Kit\ClassLoader\BasePathLoader();
 $loader->addNamespacePath('Vendor', __DIR__ . '/class/');
 $loader->register();
 

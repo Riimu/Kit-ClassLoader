@@ -1,6 +1,6 @@
 <?php
 
-namespace riimu\kit\ClassLoader;
+namespace Riimu\Kit\ClassLoader;
 
 /**
  * Autoloader for PSR-0 compliant namespace based folder structures.

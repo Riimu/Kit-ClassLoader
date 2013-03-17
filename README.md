@@ -1,4 +1,4 @@
-# Class autoloader for riimu\kit #
+# Class autoloader for Riimu\Kit #
 
 The ClassLoader package provides an autoloader for classes that are PSR-0
 compliant. In other words, the autoloader can handle loading classes in
@@ -16,7 +16,7 @@ rest.
 
 ```php
 <?php
-$loader = new riimu\kit\ClassLoader\BasePathLoader();
+$loader = new Riimu\Kit\ClassLoader\BasePathLoader();
 $loader->addBasePath('/path/to/classes/');
 $loader->register();
 ```
@@ -30,7 +30,7 @@ directory, you can add additional base directory for those classes using the
 
 ```php
 <?php
-$loader = new riimu\kit\ClassLoader\BasePathLoader();
+$loader = new Riimu\Kit\ClassLoader\BasePathLoader();
 $loader->addNamespacePath('Vendor', '/other/class/path/');
 $loader->register();
 ```

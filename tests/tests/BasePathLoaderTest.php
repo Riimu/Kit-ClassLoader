@@ -1,6 +1,6 @@
 <?php
 
-use riimu\kit\ClassLoader\BasePathLoader;
+use Riimu\Kit\ClassLoader\BasePathLoader;
 
 /**
  * @author Riikka Kalliomäki <riikka.kalliomaki@gmail.com>
@@ -46,7 +46,7 @@ class BasePathLoaderTest extends PHPUnit_Framework_TestCase
 
     public function testCallingAutoloadCall()
 	{
-		$loader = $this->getMock('riimu\kit\ClassLoader\BasePathLoader', array('load'));
+		$loader = $this->getMock('Riimu\Kit\ClassLoader\BasePathLoader', array('load'));
 		$loader->expects($this->once())->method('load')->will($this->returnValue(false));
 
 		$this->assertTrue($loader->register());
@@ -81,7 +81,7 @@ class BasePathLoaderTest extends PHPUnit_Framework_TestCase
     public function testLoadingExistingClass()
     {
         $loader = new BasePathLoader();
-        $loader->load('riimu\kit\ClassLoader\BasePathLoader');
+        $loader->load('Riimu\Kit\ClassLoader\BasePathLoader');
     }
 
     /**

@@ -17,7 +17,7 @@
     },
     "autoload": {
         "psr-0": {
-            "riimu\\kit\\ClassLoader": "src"
+            "Riimu\\Kit\\ClassLoader": "src"
         }
     }
 }
