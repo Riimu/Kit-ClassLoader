@@ -46,7 +46,7 @@ class BasePathLoaderTest extends PHPUnit_Framework_TestCase
 
     public function testCallingAutoloadCall()
 	{
-		$loader = $this->getMock('Riimu\Kit\ClassLoader\BasePathLoader', array('load'));
+		$loader = $this->getMock('Riimu\Kit\ClassLoader\BasePathLoader', ['load']);
 		$loader->expects($this->once())->method('load')->will($this->returnValue(false));
 
 		$this->assertTrue($loader->register());

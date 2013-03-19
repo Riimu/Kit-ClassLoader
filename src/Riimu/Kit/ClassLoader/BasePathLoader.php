@@ -82,13 +82,13 @@ class BasePathLoader
     {
         $this->includePathSeparator = PATH_SEPARATOR;
         $this->directorySeparator = DIRECTORY_SEPARATOR;
-        $this->basePaths = array();
-        $this->subPaths = array();
-        $this->fileExtensions = array('.php');
+        $this->basePaths = [];
+        $this->subPaths = [];
+        $this->fileExtensions = ['.php'];
         $this->loadFromIncludePath = true;
         $this->throwOnMissingClass = true;
         $this->throwOnMissingSubPath = false;
-        $this->loader = array($this, 'load');
+        $this->loader = [$this, 'load'];
     }
 
     /**
@@ -124,10 +124,12 @@ class BasePathLoader
      * Defaults to true.
      *
      * @param boolean $enabled True to use include_path, false to not use
+     * @return BasePathLoader Returns self for call chaining
      */
     public function setLoadFromIncludePath($enabled)
     {
         $this->loadFromIncludePath = (bool) $enabled;
+        return $this;
     }
 
     /**
@@ -136,10 +138,12 @@ class BasePathLoader
      * Defaults to true.
      *
      * @param boolean $enabled True to throw an exception, false to not
+     * @return BasePathLoader Returns self for call chaining
      */
     public function setThrowOnMissingClass($enabled)
     {
         $this->throwOnMissingClass = (bool) $enabled;
+        return $this;
     }
 
     /**
@@ -152,10 +156,12 @@ class BasePathLoader
      * Defaults to false.
      *
      * @param boolean $enabled True to throw an exception, false to not
+     * @return BasePathLoader Returns self for call chaining
      */
     public function setThrowOnMissingSubPath($enabled)
     {
         $this->throwOnMissingSubPath = (bool) $enabled;
+        return $this;
     }
 
     /**
@@ -164,19 +170,23 @@ class BasePathLoader
      * Defaults to ['.php']
      *
      * @param array $extensions Array of dot included file extensions to use
+     * @return BasePathLoader Returns self for call chaining
      */
     public function setFileExtensions(array $extensions)
     {
         $this->fileExtensions = $extensions;
+        return $this;
     }
 
     /**
      * Adds a path where to look for all classes.
      * @param string|array $path Single path or multiple paths
+     * @return BasePathLoader Returns self for call chaining
      */
     public function addBasePath($path)
     {
         $this->basePaths = array_merge($this->canonizePaths($path), $this->basePaths);
+        return $this;
     }
 
     /**
@@ -196,6 +206,7 @@ class BasePathLoader
      *
      * @param string|array $namespace Namespace or array definition
      * @param string|array $path Single path or multiple paths
+     * @return BasePathLoader Returns self for call chaining
      */
     public function addNamespacePath($namespace, $path = '.')
     {
@@ -213,6 +224,8 @@ class BasePathLoader
                     $this->subPaths[$parts[0]][$namespace], $path);
             }
         }
+
+        return $this;
     }
 
     /**
@@ -283,6 +296,8 @@ class BasePathLoader
      * Attempts to load the class for sub paths for one namespace.
      * @param array $parts The class name separated into namespace parts
      * @param array $base The base paths define for the namespace
+     * @param string $class Full name of the class
+     * @param string $file File path generated from class name
      * @return boolean True if the class was loaded, false if not
      * @throws \RuntimeException If class was not in any matching path
      */
@@ -311,6 +326,8 @@ class BasePathLoader
     /**
      * Attempts to load the class from any given path.
      * @param array $paths Paths where to look for the class file
+     * @param string $class Full name of the class
+     * @param string $file File path generated from class name
      * @return boolean true if the class was loaded, false if not
      */
     private function loadFromPaths(array $paths, $class, $file)
@@ -328,16 +345,17 @@ class BasePathLoader
 
     /**
      * Attempts to load the class from given file.
+     * @param string $class Full name of the class
      * @param string $file File where the class could exist
      * @return boolean True if the class was loaded, false if not
      * @throws \RuntimeException If class was not in the loaded file
      */
-    private function loadFromFile($class, $file)
+    protected function loadFromFile($class, $file)
     {
         $loaded = false;
 
         if (file_exists($file)) {
-            require $file;
+            include $file;
             $loaded = $this->exists($class);
 
             if (!$loaded && $this->throwOnMissingClass) {

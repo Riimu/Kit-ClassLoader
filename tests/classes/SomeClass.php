@@ -3,5 +3,3 @@
 class SomeClass implements SomeInterface {
     use SomeTrait;
 }
-
-
