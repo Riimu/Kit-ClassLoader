@@ -1,4 +1,4 @@
-# Class autoloader for Riimu\Kit #
+# Library for class autoloading with PSR-0 compatibility #
 
 The ClassLoader package provides an autoloader for classes that are PSR-0
 compliant. In other words, the autoloader can handle loading classes in
