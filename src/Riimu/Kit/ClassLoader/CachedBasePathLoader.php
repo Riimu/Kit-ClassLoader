@@ -3,7 +3,7 @@
 namespace Riimu\Kit\ClassLoader;
 
 /**
- * Improved BasePathLoader with class file path caching.
+ * BasePathLoader with class file path caching.
  *
  * In addition to the features of BasePathLoader, the CachedBasePathLoader
  * provides for caching of file paths for classes. This can improve the class
@@ -68,12 +68,15 @@ class CachedBasePathLoader extends BasePathLoader
             if ($result === false) {
                 unset($this->cache[$class]);
                 $this->saveCache();
-            } else {
-                return true;
             }
         }
 
-        return parent::load($class);
+        if (empty($result)) {
+            $result = parent::load($class);
+        }
+        if (!$this->silent) {
+            return $result !== false;
+        }
     }
 
     /**

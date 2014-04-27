@@ -3,17 +3,18 @@
 namespace Riimu\Kit\ClassLoader;
 
 /**
- * Autoloader for PSR-0 compliant namespace based folder structures.
+ * Class autoloader with PSR-0 and PSR-4 compatibility.
  *
- * BasePathLoader is PSR-0 compliant autoloader for classes. Classes are loaded
- * from files using folder structures based on their namespaces (or faux
- * namespaces by using underscore in class names). Additionally, multiple and
- * separate paths can defined for different sub namespaces.
+ * BasePathLoader provides both PSR-0 compliant class autoloading and PSR-4
+ * compliant class autoloading. When classes are loaded using base paths or
+ * namespace paths, they are handled as instructed in PSR-0 and classes loaded
+ * by adding prefix paths are handled according to PSR-4.
  *
- * While namespaces and class names are case insensitive in PHP, this autoloader
- * will treat all definitions as case sensitive due to the fact that numerous
- * file systems are case sensitive. While only classes are mentioned, everything
- * in the autoloader also applies to interfaces and traits.
+ * In PSR-0, underscores in the class name are treated as namespace separators
+ * which are translated to directory separators in the directory system. This
+ * does not happen in PSR-4 class loading. By default, the class also does not
+ * return values from the autoload method nor throw exceptions, as per PSR-4,
+ * but these settings can be changed.
  *
  * @author Riikka Kalliomäki <riikka.kalliomaki@gmail.com>
  * @copyright Copyright (c) 2013, Riikka Kalliomäki
@@ -46,6 +47,12 @@ class BasePathLoader
     private $subPaths;
 
     /**
+     * List of prefixed namespace paths where to look for files.
+     * @var array
+     */
+    private $prefixPaths;
+
+    /**
      * List of file extensions that are used for file inclusion.
      * @var array
      */
@@ -58,16 +65,10 @@ class BasePathLoader
     private $loadFromIncludePath;
 
     /**
-     * Whether to throw an exception if class was not contained in the file.
+     * Whether to act completely silently as autoloader or not.
      * @var boolean
      */
-    private $throwOnMissingClass;
-
-    /**
-     * Whether to throw an exception when class does not exist in namespace specific paths.
-     * @var boolean
-     */
-    private $throwOnMissingSubPath;
+    protected $silent;
 
     /**
      * The autoload method use to load classes.
@@ -84,10 +85,10 @@ class BasePathLoader
         $this->directorySeparator = DIRECTORY_SEPARATOR;
         $this->basePaths = [];
         $this->subPaths = [];
+        $this->prefixPaths = [];
         $this->fileExtensions = ['.php'];
-        $this->loadFromIncludePath = true;
-        $this->throwOnMissingClass = true;
-        $this->throwOnMissingSubPath = false;
+        $this->loadFromIncludePath = false;
+        $this->silent = true;
         $this->loader = [$this, 'load'];
     }
 
@@ -121,7 +122,8 @@ class BasePathLoader
     /**
      * Tells whether you want to look for classes in include_path or not.
      *
-     * Defaults to true.
+     * When enabled, the directory paths in include_path are treated as base
+     * paths where to look for classes. This defaults to false.
      *
      * @param boolean $enabled True to use include_path, false to not use
      * @return BasePathLoader Returns self for call chaining
@@ -133,34 +135,18 @@ class BasePathLoader
     }
 
     /**
-     * Enables exceptions if the class does not exist in an included file.
+     * Sets whether to throw expections and return values from class loading.
      *
-     * Defaults to true.
-     *
-     * @param boolean $enabled True to throw an exception, false to not
-     * @return BasePathLoader Returns self for call chaining
-     */
-    public function setThrowOnMissingClass($enabled)
-    {
-        $this->throwOnMissingClass = (bool) $enabled;
-        return $this;
-    }
-
-    /**
-     * Enables exceptions if class did not exist in namespace specific path.
-     *
-     * When enabled and a namespace specific path is defined for a class, an
-     * exception will be thrown if the class could not be loaded from any
-     * path defined for any namespace that matches the class.
-     *
-     * Defaults to false.
+     * PSR-4 states that class autloader must not throw exceptions and should
+     * not return any values. This value defaults to true and when disabled,
+     * the load method will return a value and throw exceptions on errors.
      *
      * @param boolean $enabled True to throw an exception, false to not
      * @return BasePathLoader Returns self for call chaining
      */
-    public function setThrowOnMissingSubPath($enabled)
+    public function setSilent($enabled)
     {
-        $this->throwOnMissingSubPath = (bool) $enabled;
+        $this->silent = (bool) $enabled;
         return $this;
     }
 
@@ -180,7 +166,7 @@ class BasePathLoader
 
     /**
      * Adds a path where to look for all classes.
-     * @param string|array $path Single path or multiple paths
+     * @param string|array $path Single path or array of paths
      * @return BasePathLoader Returns self for call chaining
      */
     public function addBasePath($path)
@@ -210,7 +196,7 @@ class BasePathLoader
      */
     public function addNamespacePath($namespace, $path = '.')
     {
-        $paths = func_num_args() == 1 ? $namespace : [$namespace => $path];
+        $paths = is_array($namespace) ? $namespace : [$namespace => $path];
 
         foreach($paths as $namespace => $path) {
             $parts = $this->getParts(rtrim($namespace, '_\\'));
@@ -229,6 +215,38 @@ class BasePathLoader
     }
 
     /**
+     * Adds PSR-4 prefixed paths for namespaces.
+     *
+     * A prefixed path for namespace is a path that replaces part of the
+     * namespace with path when resolving class names to file locations. For
+     * example, if your class Vendor\Foo\Bar is in file /usr/lib/Foo/Bar.php,
+     * you could add a prefix path using:
+     *
+     * <pre>$loader->addPrefixPath('Vendor\Foo', '/usr/lib/Foo')</pre>
+     *
+     * @param string|array $prefix Namespace prefix or associative array
+     * @param string|array $path Single or multiple paths to add
+     * @return BasePathLoader Returns self for call chaining
+     */
+    public function addPrefixPath($prefix, $path = '.')
+    {
+        $prefixes = is_array($prefix) ? $prefix : [$prefix => $path];
+
+        foreach ($prefixes as $pre => $paths) {
+            $pre = trim($pre, '\\') . '\\';
+            $paths = $this->canonizePaths($paths);
+
+            if (isset($this->prefixPaths[$pre])) {
+                $this->prefixPaths[$pre] = array_merge($this->prefixPaths[$pre], $paths);
+            } else {
+                $this->prefixPaths[$pre] = $paths;
+            }
+        }
+
+        return $this;
+    }
+
+    /**
      * Makes sure that the paths are followed by directory separator.
      * @param string|array $paths Single path or multiple paths
      * @return array Canonized paths in an array
@@ -238,9 +256,8 @@ class BasePathLoader
         $paths = is_array($paths) ? $paths : [$paths];
 
         foreach ($paths as $key => $path) {
-            if (substr($path, -1) != $this->directorySeparator) {
-                $paths[$key] .= $this->directorySeparator;
-            }
+            $paths[$key] = rtrim($path, $this->directorySeparator) .
+                $this->directorySeparator;
         }
 
         return $paths;
@@ -249,47 +266,88 @@ class BasePathLoader
     /**
      * Attemps to load the class from any known path.
      *
-     * The name of the class is treated according to PSR-0. Namespace separators
-     * and underscores in the class name are replace with directory separators.
-     * The file is then searched in any path added for that spesific namespace,
-     * in any general base path or in include_path, if allowed, in that order.
+     * The load method first tries to load the class using PSR-4 rules for
+     * resolving file names using the added prefix paths. If not found, then
+     * the class name is treated according to PSR-0, using underscores in the
+     * file name as namespace and directory separators. The class loader then
+     * attemps to load the class using namespace paths, base paths and include
+     * path in that order.
      *
-     * If enabled, exceptions can be thrown if an included file does not contain
-     * the class it is supposed to contain. Additionally, an exception can be
-     * thrown if a namespace specific path existed for that class, but that
-     * class was not found in any of those paths. Loading a class that already
-     * exists will also cause an exception.
+     * If silent mode is disabled, the method will return true if the class was
+     * loaded and false if not. Additionally, if the class name is invalid, or
+     * the class loader included a file without finding the class, the class
+     * loader will throw an exception.
      *
      * @param string $class Full name of the class
-     * @return boolean True if the class was loaded, false otherwise
-     * @throws \RuntimeException If the class could not be loaded from expected path
+     * @return boolean|null True if the class was loaded, false if not, or null on silent mode
+     * @throws \RuntimeException if a file was included but no class was found
      * @throws \InvalidArgumentException If the class name is invalid or already exists
      */
     public function load($class)
     {
+        if ($this->isValidClass($class)) {
+            $loaded = $this->loadClass($class);
+
+            if (!$this->silent) {
+                return $loaded;
+            }
+        }
+    }
+
+    /**
+     * Makes sure the class name is valid and it is not an existing class.
+     * @param string $class Full name of the class
+     * @return boolean True if the class name is valid, false if not
+     * @throws \InvalidArgumentException If the class name is invalid
+     */
+    private function isValidClass($class)
+    {
         if (empty($class) || !is_string($class)) {
-            throw new \InvalidArgumentException("Invalid class name");
+            if ($this->silent) {
+                return false;
+            } else {
+                throw new \InvalidArgumentException("Invalid class name");
+            }
         } elseif ($this->exists($class)) {
-            throw new \InvalidArgumentException("Attempting to load class " .
-                "'$class' that already exists");
+            if ($this->silent) {
+                return false;
+            } else {
+                throw new \InvalidArgumentException("Attempting to load " .
+                    "class '$class' that already exists");
+            }
         }
 
+        return true;
+    }
+
+    /**
+     * Attempts to load the class using different strategies.
+     * @param string $class Full name of the class
+     * @return boolean True if the class was loaded, false if not
+     */
+    private function loadClass($class)
+    {
         $parts = $this->getParts($class);
         $file = implode($this->directorySeparator, $parts);
-        $loaded = false;
 
-        if (isset($this->subPaths[$parts[0]])) {
-            $loaded = $this->loadFromSubPaths($parts, $this->subPaths[$parts[0]], $class, $file);
-        }
-        if (!$loaded && !empty($this->basePaths)) {
-            $loaded = $this->loadFromPaths($this->basePaths, $class, $file);
-        }
-        if (!$loaded && $this->loadFromIncludePath) {
+        if (!empty($this->prefixPaths) &&
+            $this->loadFromPrefixPaths($this->prefixPaths, $class)) {
+            return true;
+        } elseif (isset($this->subPaths[$parts[0]]) &&
+            $this->loadFromSubPaths($parts, $this->subPaths[$parts[0]], $class, $file)) {
+            return true;
+        } elseif (!empty($this->basePaths) &&
+            $this->loadFromPaths($this->basePaths, $class, $file)) {
+            return true;
+        } elseif ($this->loadFromIncludePath) {
             $paths = explode($this->includePathSeparator, get_include_path());
-            $loaded = $this->loadFromPaths($this->canonizePaths($paths), $class, $file);
+
+            if ($this->loadFromPaths($this->canonizePaths($paths), $class, $file)) {
+                return true;
+            }
         }
 
-        return $loaded;
+        return false;
     }
 
     /**
@@ -313,14 +371,30 @@ class BasePathLoader
             }
         }
 
-        $loaded = $this->loadFromPaths(array_reverse($paths), $class, $file);
+        return $this->loadFromPaths(array_reverse($paths), $class, $file);
+    }
 
-        if (!$loaded && !empty($paths) && $this->throwOnMissingSubPath) {
-            throw new \RuntimeException("The class '$class' could " .
-                "not be loaded from any matching namespace specific paths");
+    /**
+     * Attemps to load the class from any of the prefixed paths.
+     * @param array $paths List of paths
+     * @param string $class Full name of the class
+     * @return boolean true if the class was loaded, false if not
+     */
+    private function loadFromPrefixPaths(array $paths, $class)
+    {
+        $canon = ltrim($class, '\\');
+
+        foreach ($paths as $prefix => $paths) {
+            if (strpos($canon, $prefix) === 0) {
+                $file = str_replace('\\', $this->directorySeparator,
+                    substr($canon, strlen($prefix)));
+                if ($this->loadFromPaths($paths, $class, $file)) {
+                    return true;
+                }
+            }
         }
 
-        return $loaded;
+        return false;
     }
 
     /**
@@ -358,9 +432,9 @@ class BasePathLoader
             include $file;
             $loaded = $this->exists($class);
 
-            if (!$loaded && $this->throwOnMissingClass) {
+            if (!$loaded && !$this->silent) {
                 throw new \RuntimeException("Loaded file '$file' but it did " .
-                    "contain the class '$class'");
+                    "not contain the class '$class'");
             }
         }
 

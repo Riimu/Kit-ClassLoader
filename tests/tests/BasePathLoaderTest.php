@@ -81,6 +81,9 @@ class BasePathLoaderTest extends PHPUnit_Framework_TestCase
     public function testLoadingExistingClass()
     {
         $loader = new BasePathLoader();
+        $loader->setSilent(true);
+        $this->assertSame(null, $loader->load('Riimu\Kit\ClassLoader\BasePathLoader'));
+        $loader->setSilent(false);
         $loader->load('Riimu\Kit\ClassLoader\BasePathLoader');
     }
 
@@ -90,6 +93,9 @@ class BasePathLoaderTest extends PHPUnit_Framework_TestCase
     public function testInvalidClassName()
     {
         $loader = new BasePathLoader();
+        $loader->setSilent(true);
+        $this->assertSame(null, $loader->load('0'));
+        $loader->setSilent(false);
         $loader->load('0');
     }
 
@@ -114,8 +120,8 @@ class BasePathLoaderTest extends PHPUnit_Framework_TestCase
     {
         $loader = new BasePathLoader();
         $loader->addBasePath(CLASS_BASE);
-        $loader->setThrowOnMissingClass(false);
-        $this->loadTest($loader, 'NoClassHere', false);
+        $loader->setSilent(true);
+        $this->assertSame(null, $loader->load('NoClassHere'));
         return $loader;
     }
 
@@ -125,7 +131,7 @@ class BasePathLoaderTest extends PHPUnit_Framework_TestCase
      */
     public function testMissingClassWithException(BasePathLoader $loader)
     {
-        $loader->setThrowOnMissingClass(true);
+        $loader->setSilent(false);
         $loader->load('NoClassHere');
     }
 
@@ -157,23 +163,11 @@ class BasePathLoaderTest extends PHPUnit_Framework_TestCase
         $this->loadTest($loader, 'DifferentExt', true);
     }
 
-    public function testMissingFromNamespaceWithoutException()
+    public function testMissingFromNamespace()
     {
         $loader = new BasePathLoader();
         $loader->addNamespacePath('testns', CLASS_BASE . DIRECTORY_SEPARATOR . 'pathA');
-        $loader->setThrowOnMissingSubPath(false);
         $this->loadTest($loader, 'testns\ThisDoesNotExist', false);
-        return $loader;
-    }
-
-    /**
-     * @depends testMissingFromNamespaceWithoutException
-     * @expectedException \RuntimeException
-     */
-    public function testMissingFromNamespaceWithException(BasePathLoader $loader)
-    {
-        $loader->setThrowOnMissingSubPath(true);
-        $loader->load('testns\ThisDoesNotExist');
     }
 
     public function testLoadingClassWithUnderscores()
@@ -181,12 +175,22 @@ class BasePathLoaderTest extends PHPUnit_Framework_TestCase
         $loader = new BasePathLoader();
         $loader->addNamespacePath('pathB_testns_', CLASS_BASE);
         $this->loadTest($loader, 'pathB_testns_UnderScored', true);
+    }
 
+    public function testPrefixClassLoading()
+    {
+        $loader = new BasePathLoader();
+        $loader->addPrefixPath('FooBar', CLASS_BASE . DIRECTORY_SEPARATOR . 'pathA');
+        $loader->addPrefixPath('FooBar', [CLASS_BASE . DIRECTORY_SEPARATOR . 'pathB']);
+        $this->loadTest($loader, 'FooBar\IsNotClass', false);
+        $this->loadTest($loader, '\FooBar\PrefClassA', true);
+        $this->loadTest($loader, 'FooBar\testns\PrefClassB', true);
     }
 
 	private function loadTest (BasePathLoader $loader, $class, $exists)
 	{
-		$this->assertEquals($exists, $loader->load($class));
-		$this->assertEquals($exists, class_exists($class, false));
+        $loader->setSilent(false);
+		$this->assertSame($exists, $loader->load($class));
+		$this->assertSame($exists, class_exists($class, false));
 	}
 }

@@ -25,8 +25,8 @@ class CachedBasePathLoaderTest extends PHPUnit_Framework_TestCase
     {
         $loader = new CachedBasePathLoader([]);
         $loader->addBasePath(CLASS_BASE);
-        $loader->setThrowOnMissingClass(false);
-        $this->assertFalse($loader->load('NoClassHere'));
+        $loader->setSilent(false);
+        $this->assertFalse($loader->load('NonExistantFile'));
     }
 
     public function testFailLoadingCache()
@@ -36,6 +36,7 @@ class CachedBasePathLoaderTest extends PHPUnit_Framework_TestCase
         $loader->setCacheHandler(function ($cache) use (& $result) {
             $result = $cache;
         });
+        $loader->setSilent(false);
         $this->assertFalse(@$loader->load('NonExistantClass'));
         $this->assertEquals([], $result);
     }
@@ -43,6 +44,7 @@ class CachedBasePathLoaderTest extends PHPUnit_Framework_TestCase
     public function testCacheLoading()
     {
         $loader = new CachedBasePathLoader(['CachedClass' => CLASS_BASE . DIRECTORY_SEPARATOR . 'CachedClass.php']);
+        $loader->setSilent(false);
         $this->assertTrue($loader->load('CachedClass'));
     }
 }

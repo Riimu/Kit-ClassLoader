@@ -1,8 +1,8 @@
 {
     "name": "riimu/kit-classloader",
     "type": "library",
-    "description": "Class autoloading with support for PSR-0 autoloading",
-    "keywords": ["autoloading", "psr-0"],
+    "description": "PSR-0 and PSR-4 compatible class autoloader",
+    "keywords": ["autoloading", "psr"],
     "license": "MIT",
     "authors": [
         {
