@@ -1,11 +1,12 @@
-# Library for class autoloading with PSR-0 compatibility #
+# PSR-0 and PSR-4 class autoloading #
 
-The ClassLoader package provides an autoloader for classes that are PSR-0
-compliant. In other words, the autoloader can handle loading classes in
-folder structures that correspond to their namespaces.
+This library provides a way to support both PSR-0 class autoloading by adding
+base paths for where to look classes and PSR-4 class autoloading by adding
+prefixed namespace paths for classes. The most important functionality of the
+class autoloader is to map class names to different files according to given
+rules.
 
-API documentation is available in the class files. Additionally, documentation
-can be generated using apigen.
+API documentation for the classes can be generated using apigen.
 
 ## Usage ##
 
@@ -21,17 +22,18 @@ $loader->addBasePath('/path/to/classes/');
 $loader->register();
 ```
 
-If the path is already in your include_path, you don't even need to call the
-`addBasePath()` method.
+You may also add the directory to your include_path and allow the class loader
+to use it via `setLoadFromIncludePath()`. Both of these methods are intended
+for loading classes according to the PSR-0 standard.
 
-Alternatively, if some classes for another vendor are loaded from another base
-directory, you can add additional base directory for those classes using the
-`addNamespacePath()` method.
+The PSR-4 standard defines a way to define prefixes for class namespaces to load
+classes from directories that do not entirely correspond their namespace
+structure. To add prefixes, you can, for example, do following:
 
 ```php
 <?php
 $loader = new Riimu\Kit\ClassLoader\BasePathLoader();
-$loader->addNamespacePath('Vendor', '/other/class/path/');
+$loader->addPrefixPath('Vendor\Mylib', '/path/to/MyLib/');
 $loader->register();
 ```
 
@@ -39,4 +41,4 @@ For working examples, see the files in the examples directory.
 
 ## Credits ##
 
-This library is copyright 2013 to Riikka Kalliomäki
+This library is copyright 2013 - 2014 to Riikka Kalliomäki
