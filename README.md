@@ -39,6 +39,17 @@ $loader->register();
 
 For working examples, see the files in the examples directory.
 
+## Caching ##
+
+Class locations in projects don't generally move around that much. However,
+every time a class is loaded with the autoloader, it has to look for that class
+in all possible locations provided to the autoloader. Thus, faster class loading
+can simply be achieved by caching the file locations for each class.
+
+The library provides a simple mechanism to cache the file locations using the
+provided `FileCachedLoader` class. The constructor for that class takes path to
+the cache file as an argument and stores the class locations in that file.
+
 ## Credits ##
 
 This library is copyright 2013 - 2014 to Riikka Kalliomäki
