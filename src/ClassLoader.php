@@ -5,31 +5,29 @@ namespace Riimu\Kit\ClassLoader;
 /**
  * Class autoloader with PSR-0 and PSR-4 compatibility.
  *
- * BasePathLoader provides both PSR-0 compliant class autoloading and PSR-4
- * compliant class autoloading. When classes are loaded using base paths or
- * namespace paths, they are handled as instructed in PSR-0 and classes loaded
- * by adding prefix paths are handled according to PSR-4.
+ * ClassLoader provides both PSR-0 and PSR-4 compliant class autoloading. Paths
+ * for classes can be provided as base paths or prefixed class paths.
  *
- * In PSR-0, underscores in the class name are treated as namespace separators
- * which are translated to directory separators in the directory system. This
- * does not happen in PSR-4 class loading. By default, the class also does not
- * return values from the autoload method nor throw exceptions, as per PSR-4,
- * but these settings can be changed.
+ * When base paths are provided, classes are searched in given paths replacing
+ * all the namespace separators (and underscores in the class name) with
+ * directory separators (as per PSR-0). With prefixed paths, part of the
+ * namespace can be replaced with a specific path and the underscores in the
+ * class name are ignored (as per PSR-4).
  *
  * @author Riikka Kalliomäki <riikka.kalliomaki@gmail.com>
- * @copyright Copyright (c) 2013, Riikka Kalliomäki
+ * @copyright Copyright (c) 2014, Riikka Kalliomäki
  * @license http://opensource.org/licenses/mit-license.php MIT License
  */
 class ClassLoader
 {
     /**
-     * List of paths where to look for all classes.
+     * List of base paths for searching class files.
      * @var array
      */
     private $basePaths;
 
     /**
-     * List of prefixed namespace paths where to look for files.
+     * List of prefixed paths where to search for class files.
      * @var array
      */
     private $prefixPaths;
@@ -47,7 +45,7 @@ class ClassLoader
     private $useIncludePath;
 
     /**
-     * Whether to act completely silently as autoloader or not.
+     * Whether to return values and throw exceptions from loadClass or not
      * @var boolean
      */
     protected $verbose;
@@ -59,7 +57,7 @@ class ClassLoader
     private $loader;
 
     /**
-     * Creates a new BasePathLoader instance.
+     * Creates a new ClassLoader instance.
      */
     public function __construct()
     {
@@ -82,7 +80,7 @@ class ClassLoader
 
     /**
      * Unregisters this instance as a class autoloader.
-     * @return boolean True if the unregistration was succesful, false otherwise
+     * @return boolean True if the unregistration was succesful, false if not
      */
     public function unregister()
     {
@@ -99,13 +97,14 @@ class ClassLoader
     }
 
     /**
-     * Tells whether you want to look for classes in include_path or not.
+     * Tells whether to use include_path as part of base paths.
      *
      * When enabled, the directory paths in include_path are treated as base
-     * paths where to look for classes. This defaults to false.
+     * paths where to look for classes. This option defaults to false for PSR-4
+     * compliancy.
      *
      * @param boolean $enabled True to use include_path, false to not use
-     * @return BasePathLoader Returns self for call chaining
+     * @return ClassLoader Returns self for call chaining
      */
     public function useIncludePath($enabled = true)
     {
@@ -114,14 +113,14 @@ class ClassLoader
     }
 
     /**
-     * Sets whether to throw expections and return values from class loading.
+     * Sets whether to return values and throw exceptions from loadClass.
      *
-     * PSR-4 states that class autloader must not throw exceptions and should
-     * not return any values. This value defaults to true and when disabled,
-     * the load method will return a value and throw exceptions on errors.
+     * PSR-4 requires that autoloaders do not return values and do not throw
+     * exceptions from the autoloader. By default, the class verbose mode is set
+     * to false for PSR-4 compliancy.
      *
-     * @param boolean $enabled True to throw an exception, false to not
-     * @return BasePathLoader Returns self for call chaining
+     * @param boolean $enabled True for return values and exceptions, false for none
+     * @return ClassLoader Returns self for call chaining
      */
     public function setVerbose($enabled)
     {
@@ -135,7 +134,7 @@ class ClassLoader
      * Defaults to ['.php']
      *
      * @param array $extensions Array of dot included file extensions to use
-     * @return BasePathLoader Returns self for call chaining
+     * @return ClassLoader Returns self for call chaining
      */
     public function setFileExtensions(array $extensions)
     {
@@ -144,9 +143,32 @@ class ClassLoader
     }
 
     /**
-     * Adds a path where to look for all classes.
+     * Adds a PSR-0 compliant base path for searching classes.
+     *
+     * In PSR-0, the class namespace structure directly reflects their location
+     * in the directory tree. Adding a base path tells the base directories
+     * where to look for classes. For example, if the class 'Foo\Bar', is
+     * located in '/usr/lib/Foo/Bar.php', you would need to add '/usr/lib' as a
+     * base path.
+     *
+     * Additionally, you may specify that the base path applies only to a
+     * specific namespace. For example, if in the above example, you would
+     * want the the base path to only apply to 'Foo' namespace, you could
+     * add 'Foo' as the namespace parameter.
+     *
+     * Note that as per PSR-0, the underscores in the class name are treated
+     * as namespace separators. Therefore 'Foo_Bar_Baz', would need to reside
+     * in 'Foo/Bar/Baz.php'. Regardless of whether the namespace is indicated
+     * by namespace separators or underscores, the namespace parameter must be
+     * defined using namespace separators, e.g 'Foo\Bar'.
+     *
+     * You may also provide an array of paths, instead of just single path. You
+     * may also provide an associative array where keys indicate the namespace
+     * and the values are either a single path or array of paths.
+     *
      * @param string|array $path Single path or array of paths
-     * @return BasePathLoader Returns self for call chaining
+     * @param string $namespace Limit the path only to specific namespace
+     * @return ClassLoader Returns self for call chaining
      */
     public function addBasePath($path, $namespace = null)
     {
@@ -155,18 +177,25 @@ class ClassLoader
     }
 
     /**
-     * Adds PSR-4 prefixed paths for namespaces.
+     * Adds a PSR-4 compliant prefixed path for searching classes.
      *
-     * A prefixed path for namespace is a path that replaces part of the
-     * namespace with path when resolving class names to file locations. For
-     * example, if your class Vendor\Foo\Bar is in file /usr/lib/Foo/Bar.php,
-     * you could add a prefix path using:
+     * In PSR-4, it is possible to replace part of namespace with specific
+     * path in the directory tree instead of requiring the entire namespace
+     * structure to be present in the namespace. For example, if the class
+     * 'Vendor\Library\Class' is located in'/usr/lib/Library/src/Class.php',
+     * You would just need to add the path '/usr/lib/Library/src' to namespace
+     * 'Vendor\Library'.
      *
-     * <pre>$loader->addPrefixPath('Vendor\Foo', '/usr/lib/Foo')</pre>
+     * If the method is called without providing a namespace, then the paths
+     * work similarly to paths added via addBasePath(), except that the
+     * underscores in the file name are not treated as namespace separators.
      *
-     * @param string|array $prefix Namespace prefix or associative array
-     * @param string|array $path Single or multiple paths to add
-     * @return BasePathLoader Returns self for call chaining
+     * Similarly to addBasePath(), the paths may be provided as an array or you
+     * can just provide a single associative array as the parameter.
+     *
+     * @param string|array $path Single path or array of paths
+     * @param string $namespace The namespace prefix the given path replaces
+     * @return ClassLoader Returns self for call chaining
      */
     public function addPrefixPath($path, $namespace = null)
     {
@@ -174,6 +203,12 @@ class ClassLoader
         return $this;
     }
 
+    /**
+     * Canonizes the namespaces and paths and adds them to a list.
+     * @param string $type Name of the variable where to store
+     * @param string|array $path Single path or array of paths
+     * @param string|null $namespace The namespace definition
+     */
     private function addPath($type, $path, $namespace)
     {
         $paths = $namespace !== null
@@ -195,22 +230,23 @@ class ClassLoader
     }
 
     /**
-     * Attemps to load the class from any known path.
+     * Attemps to load the class using provided class paths.
      *
-     * The load method first tries to load the class using PSR-4 rules for
-     * resolving file names using the added prefix paths. If not found, then
-     * the class name is treated according to PSR-0, using underscores in the
-     * file name as namespace and directory separators. The class loader then
-     * attemps to load the class using namespace paths, base paths and include
-     * path in that order.
+     * The class is first attempted to load using the prefixed paths and then
+     * using the base paths. If the use of include_path is enabled, the paths
+     * in include_path are added to the list of base paths.
      *
-     * If silent mode is disabled, the method will return true if the class was
-     * loaded and false if not. Additionally, if the class name is invalid, or
-     * the class loader included a file without finding the class, the class
-     * loader will throw an exception.
+     * The classes are searched from the prefix and base paths in the order they
+     * were added to the class loader and only the first found matching file
+     * is loaded.
+     *
+     * If verbose mode is enabled, then the method will return true if the class
+     * loading was succesful and false if not. Additionally the method will
+     * throw an exception if the class name is invalid, it already exists or if
+     * the class did not exist in the file that was included.
      *
      * @param string $class Full name of the class
-     * @return boolean|null True if the class was loaded, false if not, or null on silent mode
+     * @return boolean True if the class was loaded, false if not
      * @throws \RuntimeException if a file was included but no class was found
      * @throws \InvalidArgumentException If the class name is invalid or already exists
      */
@@ -260,9 +296,9 @@ class ClassLoader
     }
 
     /**
-     * Attempts to load the class using different strategies.
+     * Attempts to find a file for the given class using known paths.
      * @param string $class Full name of the class
-     * @return boolean True if the class was loaded, false if not
+     * @return string|boolean Path to the class file or false if not found
      */
     public function findFile($class)
     {
@@ -276,6 +312,11 @@ class ClassLoader
         return $file;
     }
 
+    /**
+     * Attemps to find the class file using prefix paths.
+     * @param string $class Full name of the class
+     * @return string|boolean Path to the class file or false if not found
+     */
     private function findFromPrefixPaths($class)
     {
         foreach ($this->prefixPaths as $namespace => $paths) {
@@ -291,6 +332,11 @@ class ClassLoader
         return false;
     }
 
+    /**
+     * Attemps to find the class file using base paths.
+     * @param string $class Full name of the class
+     * @return string|boolean Path to the class file or false if not found
+     */
     private function findFromBasePaths($class)
     {
         $canon = preg_replace('/_(?=[^\\\\]*$)/', '\\', $class);
@@ -318,6 +364,12 @@ class ClassLoader
         return false;
     }
 
+    /**
+     * Searches for the class file in given paths.
+     * @param array $paths List of paths where to look
+     * @param string $fname File name appanded to the path
+     * @return string|boolean Path to the class file or false if not found
+     */
     private function findPath($paths, $fname) {
         foreach ($paths as $path) {
             foreach ($this->fileExtensions as $ext) {
@@ -330,6 +382,13 @@ class ClassLoader
         return false;
     }
 
+    /**
+     * Includes the file and makes sure the class exists.
+     * @param string $file Full path to the file
+     * @param string $class Full name of the class
+     * @return boolean True if the class was loaded, false if not
+     * @throws \RuntimeException If a file was loaded, but no class was found
+     */
     protected function loadFile($file, $class)
     {
         include $file;
@@ -343,8 +402,8 @@ class ClassLoader
     }
 
     /**
-     * Tells if the given class is already defined.
-     * @param string $name Name of the class
+     * Tells if a class, interface or trait exists with given name.
+     * @param string $class Full name of the classs
      * @return boolean True if it exists, false if it does not exists
      */
     private function classExists($class) {

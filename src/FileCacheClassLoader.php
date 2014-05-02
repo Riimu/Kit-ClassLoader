@@ -3,7 +3,13 @@
 namespace Riimu\Kit\ClassLoader;
 
 /**
- * Class autoloader with simple file based caching for file locations.
+ * Provides a simplified PHP file storage for the class file path cache.
+ *
+ * FileCacheClassLoader implements the CacheListClassLoader by storing the
+ * class paths in a PHP file that is loaded when the class is loaded. If changes
+ * are made to the cache, a new cache file is generated at the end of the
+ * request, instead of on every new file to reduce file writes.
+ *
  * @author Riikka Kalliomäki <riikka.kalliomaki@gmail.com>
  * @copyright Copyright (c) 2014, Riikka Kalliomäki
  * @license http://opensource.org/licenses/mit-license.php MIT License
@@ -16,15 +22,15 @@ class FileCacheClassLoader extends CacheListClassLoader
      */
     private $cacheFile;
 
+    /**
+     * Cache to store at the end of request.
+     * @var array
+     */
     private $store;
 
     /**
-     * Creates new cached class loader and loads the cache from the file.
-     *
-     * If no path to the cache file is provided, then the cache is stored to
-     * the same directory as the class itself.
-     *
-     * @param string $cacheFile Path to cache file or null for default
+     * Creates new FileCacheClassLoader instace and loads the cache file.
+     * @param string $cacheFile Path to cache file
      */
     public function __construct($cacheFile)
     {
@@ -43,6 +49,9 @@ class FileCacheClassLoader extends CacheListClassLoader
         $this->setCacheHandler(array($this, 'storeCache'));
     }
 
+    /**
+     * Writes the cache file if changes were made.
+     */
     public function __destruct()
     {
         if (isset($this->store)) {
@@ -60,7 +69,7 @@ class FileCacheClassLoader extends CacheListClassLoader
     }
 
     /**
-     * Saves the class cache into the cache file.
+     * Stores the cache to be saved at the end of the request.
      * @param array $cache Class location cache
      */
     public function storeCache(array $cache)
@@ -86,7 +95,7 @@ class FileCacheClassLoader extends CacheListClassLoader
     }
 
     /**
-     * Escapes strings to be put into singnle quotes.
+     * Escapes strings to be put into single quotes.
      * @param string $string String to escape
      * @return string Escaped string
      */

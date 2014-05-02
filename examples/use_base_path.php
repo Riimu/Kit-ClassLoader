@@ -1,8 +1,8 @@
 <?php
 
-include __DIR__ . '/../src/BasePathLoader.php';
+include __DIR__ . '/../src/ClassLoader.php';
 
-$loader = new Riimu\Kit\ClassLoader\BasePathLoader();
+$loader = new Riimu\Kit\ClassLoader\ClassLoader();
 $loader->addBasePath(__DIR__ . '/class/');
 $loader->register();
 

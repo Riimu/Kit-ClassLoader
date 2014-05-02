@@ -3,33 +3,39 @@
 namespace Riimu\Kit\ClassLoader;
 
 /**
- * BasePathLoader with class file path caching.
+ * Provides a simple method of caching list of class file locations.
  *
- * In addition to the features of BasePathLoader, the CachedBasePathLoader
- * provides for caching of file paths for classes. This can improve the class
- * auto loading times, because the class file no longer need to be searched in
- * known paths.
+ * CacheListClassLoader provides a simple way to implement your own caching
+ * handlers for the ClassLoader. The base idea of this cache is to call a
+ * provided cache save handler when a new class location is found with the
+ * whole class location cache. The saved cache location should be provided
+ * in the constructor when the class loader is constructed.
  *
  * @author Riikka Kalliomäki <riikka.kalliomaki@gmail.com>
- * @copyright Copyright (c) 2013, Riikka Kalliomäki
+ * @copyright Copyright (c) 2014, Riikka Kalliomäki
  * @license http://opensource.org/licenses/mit-license.php MIT License
  */
 class CacheListClassLoader extends ClassLoader
 {
     /**
-     * List of classes and files.
+     * List of class file locations.
      * @var array
      */
     private $cache;
 
     /**
      * Callback used for storing the cache.
-     * @var type
+     * @var callback
      */
     private $cacheHandler;
 
     /**
-     * Creates a new instance.
+     * Creates a new CacheListClassLoader instance.
+     *
+     * The parameter should contain the paths provided to your cache save
+     * handler. If no cache exists yet, an empty array should be provided
+     * instead.
+     *
      * @param array $cache The cached paths stored by your cache handler
      */
     public function __construct(array $cache)
@@ -43,11 +49,13 @@ class CacheListClassLoader extends ClassLoader
     /**
      * Sets the callback used to store the cache.
      *
-     * The cache handler is called with the full class path cache array whenever
-     * it is changed.
+     * Whenever a new file location for class is found, the cache handler is
+     * called with an associative array containing the path for different
+     * classes. The cache handler should store the array and provide it in the
+     * constructor in following requests.
      *
      * @param callable $callback Callback for storing cache.
-     * @return CachedBasePathLoader Returns self for call chaining
+     * @return CacheListClassLoader Returns self for call chaining
      */
     public function setCacheHandler(callable $callback)
     {
@@ -58,7 +66,7 @@ class CacheListClassLoader extends ClassLoader
     /**
      * Loads the class by first checking if the file path is cached.
      * @param string $class Full name of the class
-     * @return boolean True if the class was loaded, false otherwise
+     * @return boolean True if the class was loaded, false if not
      */
     public function loadClass($class)
     {
@@ -81,8 +89,8 @@ class CacheListClassLoader extends ClassLoader
 
     /**
      * Loads the class from the given file and stores the path into cache.
+     * @param string $file Full path to the file
      * @param string $class Full name of the class
-     * @param string $file File where the class could exist
      * @return boolean True if the class was loaded, false if not
      */
     protected function loadFile($file, $class)

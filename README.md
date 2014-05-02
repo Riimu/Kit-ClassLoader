@@ -1,39 +1,39 @@
-# PSR-0 and PSR-4 class autoloading #
+# PSR-0 and PSR-4 class autoloader #
 
-This library provides a way to support both PSR-0 class autoloading by adding
-base paths for where to look classes and PSR-4 class autoloading by adding
-prefixed namespace paths for classes. The most important functionality of the
-class autoloader is to map class names to different files according to given
-rules.
+This library provides a class autoloader with support for both PSR-0 and
+PSR-4 class autoloading. It is possible to provide autoloading paths as base
+paths which are appended with entire class namespace structure or as prefix
+paths which replace part of the namespace with a specific directory path.
+
+The library also provides additional classes for caching class file locations
+to reduce the class autoload overhead.
 
 API documentation for the classes can be generated using apigen.
 
 ## Usage ##
 
-Easiest way to use the class loader is to put all your classes in a single
-directory with sub directories according to their namespaces. By doing this,
-you can just add the base directory to the class loader and let it handle the
-rest.
+Basically, PSR-0 autoloading means that the entire class namespace structure
+is reflected in the directory tree. For example, the file class 'Foo\Bar\Baz'
+is located in '/path/to/classes/Foo/Bar/Baz.php'. Easiest way to autoload your
+classes is to simply put them in directories according to their namespaces and
+add the base path to the class loader. For example:
 
 ```php
 <?php
-$loader = new Riimu\Kit\ClassLoader\BasePathLoader();
+$loader = new Riimu\Kit\ClassLoader\ClassLoader();
 $loader->addBasePath('/path/to/classes/');
 $loader->register();
 ```
 
-You may also add the directory to your include_path and allow the class loader
-to use it via `setLoadFromIncludePath()`. Both of these methods are intended
-for loading classes according to the PSR-0 standard.
-
-The PSR-4 standard defines a way to define prefixes for class namespaces to load
-classes from directories that do not entirely correspond their namespace
-structure. To add prefixes, you can, for example, do following:
+PSR-4 autoloading, however, does not require that file paths necessarily reflect
+the entire class namespace stucture. It's possible to replace part of the
+namespace with a specific directory. For example, if your 'Foo\Bar\Baz.php' is
+located in '/path/to/Library/Baz.php', you could do the following:
 
 ```php
 <?php
-$loader = new Riimu\Kit\ClassLoader\BasePathLoader();
-$loader->addPrefixPath('Vendor\Mylib', '/path/to/MyLib/');
+$loader = new Riimu\Kit\ClassLoader\ClassLoader();
+$loader->addPrefixPath('/path/to/Library/', 'Foo\Bar');
 $loader->register();
 ```
 
@@ -41,14 +41,25 @@ For working examples, see the files in the examples directory.
 
 ## Caching ##
 
-Class locations in projects don't generally move around that much. However,
-every time a class is loaded with the autoloader, it has to look for that class
-in all possible locations provided to the autoloader. Thus, faster class loading
-can simply be achieved by caching the file locations for each class.
+Looking for classes in the filesystem on each request is a costly affair. It is
+highly recommended to cache the file locations so that they do not need to be
+searched on every request. After all, the class file locations do not tend to
+move around in the file system.
 
-The library provides a simple mechanism to cache the file locations using the
-provided `FileCachedLoader` class. The constructor for that class takes path to
-the cache file as an argument and stores the class locations in that file.
+This library provides a very simple caching system via the class
+`FileCacheClassLoader`. The class stores the file locations in a single PHP file
+which is loaded on every request instead of searching for the files manually.
+
+The usage of the cached class loader does not differ much from the base class
+loader. You simply need to provide the path to a cache file that will be used
+to store the class locations in the constructor. For example:
+
+```php
+<?php
+$loader = new Riimu\Kit\ClassLoader\FileCacheClassLoader(__DIR__ . '/cache.php');
+$loader->addBasePath('/path/to/classes/');
+$loader->register();
+```
 
 ## Credits ##
 
