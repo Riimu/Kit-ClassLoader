@@ -23,28 +23,10 @@ namespace Riimu\Kit\ClassLoader;
 class ClassLoader
 {
     /**
-     * Separator that separates paths in include_path ini setting.
-     * @var string
-     */
-    private $includePathSeparator;
-
-    /**
-     * Separator the separates folders in directory tree.
-     * @var string
-     */
-    private $directorySeparator;
-
-    /**
      * List of paths where to look for all classes.
      * @var array
      */
     private $basePaths;
-
-    /**
-     * List of namespace specific base paths to use for looking for classes.
-     * @var array
-     */
-    private $subPaths;
 
     /**
      * List of prefixed namespace paths where to look for files.
@@ -62,13 +44,13 @@ class ClassLoader
      * Whether to look for classes in include_path or not.
      * @var boolean
      */
-    private $loadFromIncludePath;
+    private $useIncludePath;
 
     /**
      * Whether to act completely silently as autoloader or not.
      * @var boolean
      */
-    protected $silent;
+    protected $verbose;
 
     /**
      * The autoload method use to load classes.
@@ -81,15 +63,12 @@ class ClassLoader
      */
     public function __construct()
     {
-        $this->includePathSeparator = PATH_SEPARATOR;
-        $this->directorySeparator = DIRECTORY_SEPARATOR;
         $this->basePaths = [];
-        $this->subPaths = [];
         $this->prefixPaths = [];
         $this->fileExtensions = ['.php'];
-        $this->loadFromIncludePath = false;
-        $this->silent = true;
-        $this->loader = [$this, 'load'];
+        $this->useIncludePath = false;
+        $this->verbose = true;
+        $this->loader = [$this, 'loadClass'];
     }
 
     /**
@@ -128,9 +107,9 @@ class ClassLoader
      * @param boolean $enabled True to use include_path, false to not use
      * @return BasePathLoader Returns self for call chaining
      */
-    public function setLoadFromIncludePath($enabled)
+    public function useIncludePath($enabled = true)
     {
-        $this->loadFromIncludePath = (bool) $enabled;
+        $this->useIncludePath = (bool) $enabled;
         return $this;
     }
 
@@ -144,9 +123,9 @@ class ClassLoader
      * @param boolean $enabled True to throw an exception, false to not
      * @return BasePathLoader Returns self for call chaining
      */
-    public function setSilent($enabled)
+    public function setVerbose($enabled)
     {
-        $this->silent = (bool) $enabled;
+        $this->verbose = (bool) $enabled;
         return $this;
     }
 
@@ -169,48 +148,9 @@ class ClassLoader
      * @param string|array $path Single path or array of paths
      * @return BasePathLoader Returns self for call chaining
      */
-    public function addBasePath($path)
+    public function addBasePath($path, $namespace = null)
     {
-        $this->basePaths = array_merge($this->canonizePaths($path), $this->basePaths);
-        return $this;
-    }
-
-    /**
-     * Adds a path that is used to look for classes in specific namespace.
-     *
-     * The paths can be provided as a string containing a single path or an
-     * array containing multiple paths. Additionally, instead of providing
-     * two arguments, you can provide a single array, where keys indicate
-     * namespaces and the values are the paths. The namespace may contain any
-     * number of sub namespaces and even the name of the class.
-     *
-     * Note that the path must point to base path for the loaded class. For
-     * example, if the classes for the namespace "vendor\foo\bar" are in
-     * "/usr/lib/vendor/foo/bar", the you could call the function like
-     *
-     * <pre>$loader->addNamespacePath('vendor\foo\bar', '/usr/lib')</pre>
-     *
-     * @param string|array $namespace Namespace or array definition
-     * @param string|array $path Single path or multiple paths
-     * @return BasePathLoader Returns self for call chaining
-     */
-    public function addNamespacePath($namespace, $path = '.')
-    {
-        $paths = is_array($namespace) ? $namespace : [$namespace => $path];
-
-        foreach($paths as $namespace => $path) {
-            $parts = $this->getParts(rtrim($namespace, '_\\'));
-            $namespace = implode('\\', $parts) . '\\';
-            $path = $this->canonizePaths($path);
-
-            if (!isset($this->subPaths[$parts[0]][$namespace])) {
-                $this->subPaths[$parts[0]][$namespace] = $path;
-            } else {
-                $this->subPaths[$parts[0]][$namespace] = array_merge(
-                    $this->subPaths[$parts[0]][$namespace], $path);
-            }
-        }
-
+        $this->addPath('basePaths', $path, $namespace);
         return $this;
     }
 
@@ -228,39 +168,30 @@ class ClassLoader
      * @param string|array $path Single or multiple paths to add
      * @return BasePathLoader Returns self for call chaining
      */
-    public function addPrefixPath($prefix, $path = '.')
+    public function addPrefixPath($path, $namespace = null)
     {
-        $prefixes = is_array($prefix) ? $prefix : [$prefix => $path];
-
-        foreach ($prefixes as $pre => $paths) {
-            $pre = trim($pre, '\\') . '\\';
-            $paths = $this->canonizePaths($paths);
-
-            if (isset($this->prefixPaths[$pre])) {
-                $this->prefixPaths[$pre] = array_merge($this->prefixPaths[$pre], $paths);
-            } else {
-                $this->prefixPaths[$pre] = $paths;
-            }
-        }
-
+        $this->addPath('prefixPaths', $path, $namespace);
         return $this;
     }
 
-    /**
-     * Makes sure that the paths are followed by directory separator.
-     * @param string|array $paths Single path or multiple paths
-     * @return array Canonized paths in an array
-     */
-    private function canonizePaths($paths)
+    private function addPath($type, $path, $namespace)
     {
-        $paths = is_array($paths) ? $paths : [$paths];
+        $paths = $namespace !== null
+            ? [$namespace => $path]
+            : (!is_array($path) || isset($path[0]) ? ['' => $path] : $path);
 
-        foreach ($paths as $key => $path) {
-            $paths[$key] = rtrim($path, $this->directorySeparator) .
-                $this->directorySeparator;
+        foreach ($paths as $key => $value) {
+            $key = $key !== '' ? trim($key, '\\') . '\\' : '';
+
+            if (!isset($this->{$type}[$key])) {
+                $this->{$type}[$key] = [];
+            }
+
+            foreach ((array) $value as $new) {
+                $new = rtrim($new, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
+                $this->{$type}[$key][] = $new;
+            }
         }
-
-        return $paths;
     }
 
     /**
@@ -283,14 +214,20 @@ class ClassLoader
      * @throws \RuntimeException if a file was included but no class was found
      * @throws \InvalidArgumentException If the class name is invalid or already exists
      */
-    public function load($class)
+    public function loadClass($class)
     {
-        if ($this->isValidClass($class)) {
-            $loaded = $this->loadClass($class);
+        $success = false;
 
-            if (!$this->silent) {
-                return $loaded;
+        if ($this->isValidClass($class)) {
+            $file = $this->findFile($class);
+
+            if ($file !== false && $this->loadFile($file, $class)) {
+                $success = true;
             }
+        }
+
+        if ($this->verbose) {
+            return $success;
         }
     }
 
@@ -302,22 +239,24 @@ class ClassLoader
      */
     private function isValidClass($class)
     {
+        $valid = true;
+
         if (empty($class) || !is_string($class)) {
-            if ($this->silent) {
-                return false;
-            } else {
+            $valid = false;
+
+            if ($this->verbose) {
                 throw new \InvalidArgumentException("Invalid class name");
             }
-        } elseif ($this->exists($class)) {
-            if ($this->silent) {
-                return false;
-            } else {
+        } elseif ($this->classExists($class)) {
+            $valid = false;
+
+            if ($this->verbose) {
                 throw new \InvalidArgumentException("Attempting to load " .
-                    "class '$class' that already exists");
+                    "'$class' that already exists");
             }
         }
 
-        return true;
+        return $valid;
     }
 
     /**
@@ -325,71 +264,26 @@ class ClassLoader
      * @param string $class Full name of the class
      * @return boolean True if the class was loaded, false if not
      */
-    private function loadClass($class)
+    public function findFile($class)
     {
-        $parts = $this->getParts($class);
-        $file = implode($this->directorySeparator, $parts);
+        $class = ltrim($class, '\\');
+        $file = $this->findFromPrefixPaths($class);
 
-        if (!empty($this->prefixPaths) &&
-            $this->loadFromPrefixPaths($this->prefixPaths, $class)) {
-            return true;
-        } elseif (isset($this->subPaths[$parts[0]]) &&
-            $this->loadFromSubPaths($parts, $this->subPaths[$parts[0]], $class, $file)) {
-            return true;
-        } elseif (!empty($this->basePaths) &&
-            $this->loadFromPaths($this->basePaths, $class, $file)) {
-            return true;
-        } elseif ($this->loadFromIncludePath) {
-            $paths = explode($this->includePathSeparator, get_include_path());
-
-            if ($this->loadFromPaths($this->canonizePaths($paths), $class, $file)) {
-                return true;
-            }
+        if ($file === false) {
+            $file = $this->findFromBasePaths($class);
         }
 
-        return false;
+        return $file;
     }
 
-    /**
-     * Attempts to load the class for sub paths for one namespace.
-     * @param array $parts The class name separated into namespace parts
-     * @param array $base The base paths define for the namespace
-     * @param string $class Full name of the class
-     * @param string $file File path generated from class name
-     * @return boolean True if the class was loaded, false if not
-     * @throws \RuntimeException If class was not in any matching path
-     */
-    private function loadFromSubPaths(array $parts, array $base, $class, $file)
+    private function findFromPrefixPaths($class)
     {
-        $combined = '';
-        $paths = [];
-
-        foreach ($parts as $part) {
-            $combined .= $part . '\\';
-            if (isset($base[$combined])) {
-                $paths = array_merge($paths, $base[$combined]);
-            }
-        }
-
-        return $this->loadFromPaths(array_reverse($paths), $class, $file);
-    }
-
-    /**
-     * Attemps to load the class from any of the prefixed paths.
-     * @param array $paths List of paths
-     * @param string $class Full name of the class
-     * @return boolean true if the class was loaded, false if not
-     */
-    private function loadFromPrefixPaths(array $paths, $class)
-    {
-        $canon = ltrim($class, '\\');
-
-        foreach ($paths as $prefix => $paths) {
-            if (strpos($canon, $prefix) === 0) {
-                $file = str_replace('\\', $this->directorySeparator,
-                    substr($canon, strlen($prefix)));
-                if ($this->loadFromPaths($paths, $class, $file)) {
-                    return true;
+        foreach ($this->prefixPaths as $namespace => $paths) {
+            $length = strlen($namespace);
+            if (strncmp($namespace, $class, $length) === 0) {
+                $fname = strtr(substr($class, $length), ['\\' => DIRECTORY_SEPARATOR]);
+                if ($fullPath = $this->findPath($paths, $fname)) {
+                    return $fullPath;
                 }
             }
         }
@@ -397,19 +291,38 @@ class ClassLoader
         return false;
     }
 
-    /**
-     * Attempts to load the class from any given path.
-     * @param array $paths Paths where to look for the class file
-     * @param string $class Full name of the class
-     * @param string $file File path generated from class name
-     * @return boolean true if the class was loaded, false if not
-     */
-    private function loadFromPaths(array $paths, $class, $file)
+    private function findFromBasePaths($class)
     {
+        $canon = preg_replace('/_(?=[^\\\\]*$)/', '\\', $class);
+        $basePaths = $this->basePaths;
+
+        if ($this->useIncludePath) {
+            if (!isset($basePaths[''])) {
+                $basePaths[''] = [];
+            }
+
+            foreach (explode(PATH_SEPARATOR, get_include_path()) as $path) {
+                $basePaths[''][] = rtrim($path, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
+            }
+        }
+
+        foreach ($basePaths as $namespace => $paths) {
+            if (strncmp($namespace, $canon, strlen($namespace)) === 0) {
+                $fname = strtr($canon, ['\\' => DIRECTORY_SEPARATOR]);
+                if ($fullPath = $this->findPath($paths, $fname)) {
+                    return $fullPath;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    private function findPath($paths, $fname) {
         foreach ($paths as $path) {
             foreach ($this->fileExtensions as $ext) {
-                if ($this->loadFromFile($class, $path . $file . $ext)) {
-                    return true;
+                if (file_exists($path . $fname . $ext)) {
+                    return $path . $fname . $ext;
                 }
             }
         }
@@ -417,39 +330,16 @@ class ClassLoader
         return false;
     }
 
-    /**
-     * Attempts to load the class from given file.
-     * @param string $class Full name of the class
-     * @param string $file File where the class could exist
-     * @return boolean True if the class was loaded, false if not
-     * @throws \RuntimeException If class was not in the loaded file
-     */
-    protected function loadFromFile($class, $file)
+    protected function loadFile($file, $class)
     {
-        $loaded = false;
+        include $file;
+        $exists = $this->classExists($class);
 
-        if (file_exists($file)) {
-            include $file;
-            $loaded = $this->exists($class);
-
-            if (!$loaded && !$this->silent) {
-                throw new \RuntimeException("Loaded file '$file' but it did " .
-                    "not contain the class '$class'");
-            }
+        if (!$exists && $this->verbose) {
+            throw new \RuntimeException("Included file '$file' did not contain the class '$class'");
         }
 
-        return $loaded;
-    }
-
-    /**
-     * Separates the class name into namespaces according to PSR-0.
-     * @param string $class Name of the class
-     * @return array Class name exploded into parts
-     */
-    private function getParts($class) {
-        $parts = explode('\\', ltrim($class, '\\'));
-        $last = explode('_', array_pop($parts));
-        return array_merge($parts, $last);
+        return $exists;
     }
 
     /**
@@ -457,9 +347,9 @@ class ClassLoader
      * @param string $name Name of the class
      * @return boolean True if it exists, false if it does not exists
      */
-    private function exists($class) {
-        return class_exists($class) ||
-            interface_exists($class) ||
-            trait_exists($class);
+    private function classExists($class) {
+        return class_exists($class, false) ||
+            interface_exists($class, false) ||
+            trait_exists($class, false);
     }
 }

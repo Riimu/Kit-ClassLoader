@@ -46,8 +46,8 @@ class ClassLoaderTest extends \PHPUnit_Framework_TestCase
 
     public function testCallingAutoloadCall()
 	{
-		$loader = $this->getMock('Riimu\Kit\ClassLoader\ClassLoader', ['load']);
-		$loader->expects($this->once())->method('load')->will($this->returnValue(false));
+		$loader = $this->getMock('Riimu\Kit\ClassLoader\ClassLoader', ['loadClass']);
+		$loader->expects($this->once())->method('loadClass')->will($this->returnValue(false));
 
 		$this->assertTrue($loader->register());
 		$this->assertFalse(class_exists('ThisClassDoesNotExist'));
@@ -68,23 +68,16 @@ class ClassLoaderTest extends \PHPUnit_Framework_TestCase
         $this->loadTest($loader, 'BaseDirClass', true);
     }
 
-    public function testClassNameInNamespace()
-    {
-        $loader = new ClassLoader();
-        $loader->addNamespacePath('BaseNSClass', CLASS_BASE);
-        $this->loadTest($loader, 'BaseNSClass', true);
-    }
-
     /**
      * @expectedException \InvalidArgumentException
      */
     public function testLoadingExistingClass()
     {
         $loader = new ClassLoader();
-        $loader->setSilent(true);
-        $this->assertSame(null, $loader->load('Riimu\Kit\ClassLoader\ClassLoader'));
-        $loader->setSilent(false);
-        $loader->load('Riimu\Kit\ClassLoader\ClassLoader');
+        $loader->setVerbose(false);
+        $this->assertSame(null, $loader->loadClass('Riimu\Kit\ClassLoader\ClassLoader'));
+        $loader->setVerbose(true);
+        $loader->loadClass('Riimu\Kit\ClassLoader\ClassLoader');
     }
 
     /**
@@ -93,10 +86,10 @@ class ClassLoaderTest extends \PHPUnit_Framework_TestCase
     public function testInvalidClassName()
     {
         $loader = new ClassLoader();
-        $loader->setSilent(true);
-        $this->assertSame(null, $loader->load('0'));
-        $loader->setSilent(false);
-        $loader->load('0');
+        $loader->setVerbose(false);
+        $this->assertSame(null, $loader->loadClass('0'));
+        $loader->setVerbose(true);
+        $loader->loadClass('0');
     }
 
     public function testLoadingViaIncludePath()
@@ -104,9 +97,9 @@ class ClassLoaderTest extends \PHPUnit_Framework_TestCase
         $loader = new ClassLoader();
         $includePath = get_include_path();
 
-        $loader->setLoadFromIncludePath(false);
+        $loader->useIncludePath(false);
         $this->loadTest($loader, 'pathSuccess', false);
-        $loader->setLoadFromIncludePath(true);
+        $loader->useIncludePath(true);
         $this->loadTest($loader, 'pathSuccess', false);
 
         set_include_path(get_include_path() . PATH_SEPARATOR . CLASS_BASE .
@@ -120,8 +113,8 @@ class ClassLoaderTest extends \PHPUnit_Framework_TestCase
     {
         $loader = new ClassLoader();
         $loader->addBasePath(CLASS_BASE);
-        $loader->setSilent(true);
-        $this->assertSame(null, $loader->load('NoClassHere'));
+        $loader->setVerbose(false);
+        $this->assertSame(null, $loader->loadClass('NoClassHere'));
         return $loader;
     }
 
@@ -131,17 +124,17 @@ class ClassLoaderTest extends \PHPUnit_Framework_TestCase
      */
     public function testMissingClassWithException(ClassLoader $loader)
     {
-        $loader->setSilent(false);
-        $loader->load('NoClassHere');
+        $loader->setVerbose(true);
+        $loader->loadClass('NoClassHere');
     }
 
     public function testNamespaceLoadOrder()
     {
         $loader = new ClassLoader();
-        $loader->addNamespacePath('testns', [CLASS_BASE . DIRECTORY_SEPARATOR . 'pathA']);
-        $loader->addNamespacePath(['testns\\' => CLASS_BASE . DIRECTORY_SEPARATOR . 'pathB' . DIRECTORY_SEPARATOR]);
+        $loader->addBasePath(['testns\\' => CLASS_BASE . DIRECTORY_SEPARATOR . 'pathB' . DIRECTORY_SEPARATOR]);
+        $loader->addBasePath([CLASS_BASE . DIRECTORY_SEPARATOR . 'pathA'], 'testns');
         $this->loadTest($loader, 'testns\nsClass', true);
-        $this->assertEquals('B', \testns\nsClass::$source);
+        $this->assertSame('B', \testns\nsClass::$source);
     }
 
     public function testAutoChainingDifferentTypes()
@@ -166,22 +159,24 @@ class ClassLoaderTest extends \PHPUnit_Framework_TestCase
     public function testMissingFromNamespace()
     {
         $loader = new ClassLoader();
-        $loader->addNamespacePath('testns', CLASS_BASE . DIRECTORY_SEPARATOR . 'pathA');
+        $loader->addBasePath(CLASS_BASE . DIRECTORY_SEPARATOR . 'pathA', 'testns');
         $this->loadTest($loader, 'testns\ThisDoesNotExist', false);
     }
 
     public function testLoadingClassWithUnderscores()
     {
         $loader = new ClassLoader();
-        $loader->addNamespacePath('pathB_testns_', CLASS_BASE);
+        $loader->addBasePath(CLASS_BASE, 'pathB\testns');
         $this->loadTest($loader, 'pathB_testns_UnderScored', true);
+        $loader->addBasePath(CLASS_BASE);
+        $this->loadTest($loader, 'under_ns\under_class', true);
     }
 
     public function testPrefixClassLoading()
     {
         $loader = new ClassLoader();
-        $loader->addPrefixPath('FooBar', CLASS_BASE . DIRECTORY_SEPARATOR . 'pathA');
-        $loader->addPrefixPath('FooBar', [CLASS_BASE . DIRECTORY_SEPARATOR . 'pathB']);
+        $loader->addPrefixPath(CLASS_BASE . DIRECTORY_SEPARATOR . 'pathA', 'FooBar');
+        $loader->addPrefixPath([CLASS_BASE . DIRECTORY_SEPARATOR . 'pathB'], 'FooBar');
         $this->loadTest($loader, 'FooBar\IsNotClass', false);
         $this->loadTest($loader, '\FooBar\PrefClassA', true);
         $this->loadTest($loader, 'FooBar\testns\PrefClassB', true);
@@ -189,8 +184,8 @@ class ClassLoaderTest extends \PHPUnit_Framework_TestCase
 
 	private function loadTest (ClassLoader $loader, $class, $exists)
 	{
-        $loader->setSilent(false);
-		$this->assertSame($exists, $loader->load($class));
+        $loader->setVerbose(true);
+		$this->assertSame($exists, $loader->loadClass($class));
 		$this->assertSame($exists, class_exists($class, false));
 	}
 }

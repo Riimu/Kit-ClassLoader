@@ -60,7 +60,7 @@ class CacheListClassLoader extends ClassLoader
      * @param string $class Full name of the class
      * @return boolean True if the class was loaded, false otherwise
      */
-    public function load($class)
+    public function loadClass($class)
     {
         if (isset($this->cache[$class])) {
             $result = include $this->cache[$class];
@@ -68,13 +68,13 @@ class CacheListClassLoader extends ClassLoader
             if ($result === false) {
                 unset($this->cache[$class]);
                 $this->saveCache();
+                $result = parent::loadClass($class);
             }
+        } else {
+            $result = parent::loadClass($class);
         }
 
-        if (empty($result)) {
-            $result = parent::load($class);
-        }
-        if (!$this->silent) {
+        if ($this->verbose) {
             return $result !== false;
         }
     }
@@ -85,9 +85,9 @@ class CacheListClassLoader extends ClassLoader
      * @param string $file File where the class could exist
      * @return boolean True if the class was loaded, false if not
      */
-    protected function loadFromFile($class, $file)
+    protected function loadFile($file, $class)
     {
-        if (!parent::loadFromFile($class, $file)) {
+        if (!parent::loadFile($file, $class)) {
             return false;
         }
 

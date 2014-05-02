@@ -9,40 +9,32 @@ namespace Riimu\Kit\ClassLoader;
  */
 class FileCacheClassLoaderTest extends \PHPUnit_Framework_TestCase
 {
-    private $loader;
+    private $cachePath;
 
     public function tearDown()
     {
-        if (file_exists($this->loader->getCacheFile())) {
-            unlink($this->loader->getCacheFile());
-        }
-        if ($this->loader->isRegistered()) {
-            $this->loader->unregister();
+        if ($this->cachePath !== null && file_exists($this->cachePath)) {
+            unlink($this->cachePath);
         }
 
-        $this->loader = null;
+        $this->cachePath = null;
     }
 
     public function testLoadingWithNoFile()
     {
         $loader = $this->getLoader();
-        $this->assertFileNotExists($loader->getCacheFile());
+        $file = $loader->getCacheFile();
+        $this->destroy($loader);
+        $this->assertFileNotExists($file);
     }
 
-    public function testDefaultCachePath()
+    public function testCacheCreation()
     {
         $loader = $this->getLoader();
         $loader->register();
         $this->assertTrue(class_exists('FileCacheClass'));
-        $this->assertFileExists($loader->getCacheFile());
-    }
-
-    public function testDifferentPath()
-    {
-        $file = __DIR__ . DIRECTORY_SEPARATOR . 'differentCache.php';
-        $loader = $this->getLoader($file);
-        $loader->register();
-        $this->assertTrue(class_exists('FileCacheClassB'));
+        $file = $loader->getCacheFile();
+        $this->destroy($loader);
         $this->assertFileExists($file);
     }
 
@@ -50,26 +42,34 @@ class FileCacheClassLoaderTest extends \PHPUnit_Framework_TestCase
     {
         $GLOBALS['doubleLoadedIncluded'] = 0;
         $loader = $this->getLoader();
-        $loader->load('DoubleLoaded');
+        $loader->loadClass('DoubleLoaded');
+        $this->destroy($loader);
 
-        $loaderB = $this->getMock('Riimu\Kit\ClassLoader\FileCacheClassLoader', ['saveFile']);
-        $loaderB->expects($this->never())->method('saveFile');
-        $loaderB->load('DoubleLoaded');
+        $loaderB = $this->getMock('Riimu\Kit\ClassLoader\FileCacheClassLoader', ['storeCache'], [$this->cachePath]);
+        $loaderB->expects($this->never())->method('storeCache');
+        $loaderB->loadClass('DoubleLoaded');
         $this->assertSame(2, $GLOBALS['doubleLoadedIncluded']);
     }
 
     /**
      * @return \Riimu\Kit\ClassLoader\FileCachedLoader
      */
-    private function getLoader($path = null)
+    private function getLoader()
     {
-        if (func_num_args() < 1) {
-            $this->loader = new FileCacheClassLoader();
-        } else {
-            $this->loader = new FileCacheClassLoader($path);
-        }
+        $this->cachePath = __DIR__ . DIRECTORY_SEPARATOR . 'cache.php';
+        $loader = new FileCacheClassLoader($this->cachePath);
+        $loader->addBasePath(CLASS_BASE);
+        return $loader;
+    }
 
-        $this->loader->addBasePath(CLASS_BASE);
-        return $this->loader;
+    private function destroy(FileCacheClassLoader & $loader)
+    {
+        $loader->unregister();
+        $loader->__destruct();
+        $reflect = new \ReflectionClass($loader);
+        $prop = $reflect->getProperty('store');
+        $prop->setAccessible(true);
+        $prop->setValue($loader, null);
+        $loader = null;
     }
 }

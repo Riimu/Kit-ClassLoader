@@ -17,7 +17,7 @@ class CacheListClassLoaderTest extends \PHPUnit_Framework_TestCase
         $loader->setCacheHandler(function ($cache) use (& $result) {
             $result = $cache;
         });
-        $loader->load('StoreIntoCache');
+        $loader->loadClass('StoreIntoCache');
         $this->assertEquals(['StoreIntoCache' => CLASS_BASE . DIRECTORY_SEPARATOR . 'StoreIntoCache.php'], $result);
     }
 
@@ -25,8 +25,8 @@ class CacheListClassLoaderTest extends \PHPUnit_Framework_TestCase
     {
         $loader = new CacheListClassLoader([]);
         $loader->addBasePath(CLASS_BASE);
-        $loader->setSilent(false);
-        $this->assertFalse($loader->load('NonExistantFile'));
+        $loader->setVerbose(true);
+        $this->assertFalse($loader->loadClass('NonExistantFile'));
     }
 
     public function testFailLoadingCache()
@@ -36,15 +36,24 @@ class CacheListClassLoaderTest extends \PHPUnit_Framework_TestCase
         $loader->setCacheHandler(function ($cache) use (& $result) {
             $result = $cache;
         });
-        $loader->setSilent(false);
-        $this->assertFalse(@$loader->load('NonExistantClass'));
+        $loader->setVerbose(true);
+        $this->assertFalse(@$loader->loadClass('NonExistantClass'));
         $this->assertEquals([], $result);
+    }
+
+    public function testLoadingBadFile()
+    {
+        $loader = $this->getMock('Riimu\Kit\ClassLoader\CacheListClassLoader', ['saveCache'], [[]]);
+        $loader->expects($this->never())->method('saveCache');
+        $loader->setVerbose(false);
+        $loader->addBasePath(CLASS_BASE);
+        $this->assertNull($loader->loadClass('NoClassHere'));
     }
 
     public function testCacheLoading()
     {
         $loader = new CacheListClassLoader(['CachedClass' => CLASS_BASE . DIRECTORY_SEPARATOR . 'CachedClass.php']);
-        $loader->setSilent(false);
-        $this->assertTrue($loader->load('CachedClass'));
+        $loader->setVerbose(true);
+        $this->assertTrue($loader->loadClass('CachedClass'));
     }
 }

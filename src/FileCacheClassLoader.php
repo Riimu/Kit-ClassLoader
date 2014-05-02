@@ -16,6 +16,8 @@ class FileCacheClassLoader extends CacheListClassLoader
      */
     private $cacheFile;
 
+    private $store;
+
     /**
      * Creates new cached class loader and loads the cache from the file.
      *
@@ -24,12 +26,9 @@ class FileCacheClassLoader extends CacheListClassLoader
      *
      * @param string $cacheFile Path to cache file or null for default
      */
-    public function __construct($cacheFile = null)
+    public function __construct($cacheFile)
     {
-        if ($cacheFile === null) {
-            $cacheFile = __DIR__ . DIRECTORY_SEPARATOR . 'cache.php';
-        }
-
+        $this->store = null;
         $this->cacheFile = $cacheFile;
 
         if (file_exists($cacheFile)) {
@@ -41,7 +40,14 @@ class FileCacheClassLoader extends CacheListClassLoader
         }
 
         parent::__construct($cache);
-        $this->setCacheHandler(array($this, 'saveFile'));
+        $this->setCacheHandler(array($this, 'storeCache'));
+    }
+
+    public function __destruct()
+    {
+        if (isset($this->store)) {
+            file_put_contents($this->cacheFile, $this->createCache($this->store), LOCK_EX);
+        }
     }
 
     /**
@@ -57,9 +63,9 @@ class FileCacheClassLoader extends CacheListClassLoader
      * Saves the class cache into the cache file.
      * @param array $cache Class location cache
      */
-    public function saveFile(array $cache)
+    public function storeCache(array $cache)
     {
-        file_put_contents($this->cacheFile, $this->createCache($cache), LOCK_EX);
+        $this->store = $cache;
     }
 
     /**
