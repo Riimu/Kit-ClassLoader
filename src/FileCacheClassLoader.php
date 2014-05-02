@@ -84,6 +84,7 @@ class FileCacheClassLoader extends CacheListClassLoader
      */
     private function createCache(array $cache)
     {
+        ksort($cache);
         $string = '<?php return [' . PHP_EOL;
 
         foreach ($cache as $key => $value) {
