@@ -20,7 +20,7 @@ namespace Riimu\Kit\ClassLoader;
  * @copyright Copyright (c) 2013, Riikka Kalliomäki
  * @license http://opensource.org/licenses/mit-license.php MIT License
  */
-class BasePathLoader
+class ClassLoader
 {
     /**
      * Separator that separates paths in include_path ini setting.

@@ -1,18 +1,18 @@
 <?php
 
-use Riimu\Kit\ClassLoader\CachedBasePathLoader;
+namespace Riimu\Kit\ClassLoader;
 
 /**
  * @author Riikka Kalliomäki <riikka.kalliomaki@gmail.com>
  * @copyright Copyright (c) 2013, Riikka Kalliomäki
  * @license http://opensource.org/licenses/mit-license.php MIT License
  */
-class CachedBasePathLoaderTest extends PHPUnit_Framework_TestCase
+class CacheListClassLoaderTest extends \PHPUnit_Framework_TestCase
 {
     public function testCachingStorage()
     {
         $result = false;
-        $loader = new CachedBasePathLoader([]);
+        $loader = new CacheListClassLoader([]);
         $loader->addBasePath(CLASS_BASE);
         $loader->setCacheHandler(function ($cache) use (& $result) {
             $result = $cache;
@@ -23,7 +23,7 @@ class CachedBasePathLoaderTest extends PHPUnit_Framework_TestCase
 
     public function testFailLoadingFile()
     {
-        $loader = new CachedBasePathLoader([]);
+        $loader = new CacheListClassLoader([]);
         $loader->addBasePath(CLASS_BASE);
         $loader->setSilent(false);
         $this->assertFalse($loader->load('NonExistantFile'));
@@ -32,7 +32,7 @@ class CachedBasePathLoaderTest extends PHPUnit_Framework_TestCase
     public function testFailLoadingCache()
     {
         $result = false;
-        $loader = new CachedBasePathLoader(['NonExistantClass' => CLASS_BASE . DIRECTORY_SEPARATOR . 'NonExistantFile.php']);
+        $loader = new CacheListClassLoader(['NonExistantClass' => CLASS_BASE . DIRECTORY_SEPARATOR . 'NonExistantFile.php']);
         $loader->setCacheHandler(function ($cache) use (& $result) {
             $result = $cache;
         });
@@ -43,7 +43,7 @@ class CachedBasePathLoaderTest extends PHPUnit_Framework_TestCase
 
     public function testCacheLoading()
     {
-        $loader = new CachedBasePathLoader(['CachedClass' => CLASS_BASE . DIRECTORY_SEPARATOR . 'CachedClass.php']);
+        $loader = new CacheListClassLoader(['CachedClass' => CLASS_BASE . DIRECTORY_SEPARATOR . 'CachedClass.php']);
         $loader->setSilent(false);
         $this->assertTrue($loader->load('CachedClass'));
     }

@@ -8,7 +8,7 @@ namespace Riimu\Kit\ClassLoader;
  * @copyright Copyright (c) 2014, Riikka Kalliomäki
  * @license http://opensource.org/licenses/mit-license.php MIT License
  */
-class FileCachedLoader extends CachedBasePathLoader
+class FileCacheClassLoader extends CacheListClassLoader
 {
     /**
      * Path to the cache file.
