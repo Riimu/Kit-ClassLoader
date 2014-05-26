@@ -10,6 +10,8 @@ to reduce the class autoload overhead.
 
 API documentation for the classes can be generated using apigen.
 
+![travis](https://travis-ci.org/Riimu/Kit-ClassLoader.svg?branch=master)
+
 ## Usage ##
 
 Basically, PSR-0 autoloading means that the entire class namespace structure
