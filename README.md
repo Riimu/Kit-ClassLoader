@@ -10,7 +10,8 @@ to reduce the class autoload overhead.
 
 API documentation for the classes can be generated using apigen.
 
-![travis](https://travis-ci.org/Riimu/Kit-ClassLoader.svg?branch=master)
+[![Build Status](https://travis-ci.org/Riimu/Kit-ClassLoader.svg?branch=master)](https://travis-ci.org/Riimu/Kit-ClassLoader)
+[![Coverage Status](https://coveralls.io/repos/Riimu/Kit-ClassLoader/badge.png?branch=master)](https://coveralls.io/r/Riimu/Kit-ClassLoader?branch=master)
 
 ## Usage ##
 
