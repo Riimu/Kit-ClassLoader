@@ -29,7 +29,7 @@ class FileCacheClassLoader extends CacheListClassLoader
     private $store;
 
     /**
-     * Creates new FileCacheClassLoader instace and loads the cache file.
+     * Creates new FileCacheClassLoader instance and loads the cache file.
      * @param string $cacheFile Path to cache file
      */
     public function __construct($cacheFile)
@@ -46,7 +46,7 @@ class FileCacheClassLoader extends CacheListClassLoader
         }
 
         parent::__construct($cache);
-        $this->setCacheHandler(array($this, 'storeCache'));
+        $this->setCacheHandler([$this, 'storeCache']);
     }
 
     /**
@@ -88,8 +88,7 @@ class FileCacheClassLoader extends CacheListClassLoader
         $string = '<?php return [' . PHP_EOL;
 
         foreach ($cache as $key => $value) {
-            $string .= sprintf("\t'%s' => '%s'," . PHP_EOL,
-                $this->escape($key), $this->escape($value));
+            $string .= sprintf("\t'%s' => '%s'," . PHP_EOL, $this->escape($key), $this->escape($value));
         }
 
         return  $string . '];' . PHP_EOL;

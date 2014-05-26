@@ -71,7 +71,7 @@ class ClassLoader
 
     /**
      * Registers this instance as a class autoloader.
-     * @return boolean True if the registration was succesful, false if not
+     * @return boolean True if the registration was successful, false if not
      */
     public function register()
     {
@@ -80,7 +80,7 @@ class ClassLoader
 
     /**
      * Unregisters this instance as a class autoloader.
-     * @return boolean True if the unregistration was succesful, false if not
+     * @return boolean True if the unregistration was successful, false if not
      */
     public function unregister()
     {
@@ -101,7 +101,7 @@ class ClassLoader
      *
      * When enabled, the directory paths in include_path are treated as base
      * paths where to look for classes. This option defaults to false for PSR-4
-     * compliancy.
+     * compliance.
      *
      * @param boolean $enabled True to use include_path, false to not use
      * @return ClassLoader Returns self for call chaining
@@ -117,7 +117,7 @@ class ClassLoader
      *
      * PSR-4 requires that autoloaders do not return values and do not throw
      * exceptions from the autoloader. By default, the class verbose mode is set
-     * to false for PSR-4 compliancy.
+     * to false for PSR-4 compliance.
      *
      * @param boolean $enabled True for return values and exceptions, false for none
      * @return ClassLoader Returns self for call chaining
@@ -230,7 +230,7 @@ class ClassLoader
     }
 
     /**
-     * Attemps to load the class using provided class paths.
+     * Attempts to load the class using provided class paths.
      *
      * The class is first attempted to load using the prefixed paths and then
      * using the base paths. If the use of include_path is enabled, the paths
@@ -241,7 +241,7 @@ class ClassLoader
      * is loaded.
      *
      * If verbose mode is enabled, then the method will return true if the class
-     * loading was succesful and false if not. Additionally the method will
+     * loading was successful and false if not. Additionally the method will
      * throw an exception if the class name is invalid, it already exists or if
      * the class did not exist in the file that was included.
      *
@@ -287,8 +287,7 @@ class ClassLoader
             $valid = false;
 
             if ($this->verbose) {
-                throw new \InvalidArgumentException("Attempting to load " .
-                    "'$class' that already exists");
+                throw new \InvalidArgumentException("Attempting to load $class' that already exists");
             }
         }
 
@@ -313,7 +312,7 @@ class ClassLoader
     }
 
     /**
-     * Attemps to find the class file using prefix paths.
+     * Attempts to find the class file using prefix paths.
      * @param string $class Full name of the class
      * @return string|boolean Path to the class file or false if not found
      */
@@ -333,7 +332,7 @@ class ClassLoader
     }
 
     /**
-     * Attemps to find the class file using base paths.
+     * Attempts to find the class file using base paths.
      * @param string $class Full name of the class
      * @return string|boolean Path to the class file or false if not found
      */
@@ -367,10 +366,11 @@ class ClassLoader
     /**
      * Searches for the class file in given paths.
      * @param array $paths List of paths where to look
-     * @param string $fname File name appanded to the path
+     * @param string $fname File name appended to the path
      * @return string|boolean Path to the class file or false if not found
      */
-    private function findPath($paths, $fname) {
+    private function findPath($paths, $fname)
+    {
         foreach ($paths as $path) {
             foreach ($this->fileExtensions as $ext) {
                 if (file_exists($path . $fname . $ext)) {
@@ -403,10 +403,11 @@ class ClassLoader
 
     /**
      * Tells if a class, interface or trait exists with given name.
-     * @param string $class Full name of the classs
+     * @param string $class Full name of the class
      * @return boolean True if it exists, false if it does not exists
      */
-    private function classExists($class) {
+    private function classExists($class)
+    {
         return class_exists($class, false) ||
             interface_exists($class, false) ||
             trait_exists($class, false);
