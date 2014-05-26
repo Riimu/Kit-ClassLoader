@@ -4,4 +4,4 @@ if (!class_exists('DoubleLoaded')) {
     class DoubleLoaded { }
 }
 
-$GLOBALS['doubleLoadedIncluded']++;
+Riimu\Kit\ClassLoader\FileCacheClassLoaderTest::$counter++;

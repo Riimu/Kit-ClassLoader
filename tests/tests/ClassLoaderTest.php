@@ -20,45 +20,45 @@ class ClassLoaderTest extends \PHPUnit_Framework_TestCase
     }
 
     public function testRegisteringMultipleTimes ()
-	{
-		$loader = new ClassLoader();
-		$loader->register();
-		$this->assertTrue($loader->register());
-		$this->assertTrue($loader->unregister());
-		$this->assertFalse($loader->isRegistered());
-		$this->assertFalse($loader->unregister());
-	}
+    {
+        $loader = new ClassLoader();
+        $loader->register();
+        $this->assertTrue($loader->register());
+        $this->assertTrue($loader->unregister());
+        $this->assertFalse($loader->isRegistered());
+        $this->assertFalse($loader->unregister());
+    }
 
     public function testRegisteringMultipleLoaders ()
-	{
-		$loader = new ClassLoader();
-		$loader2 = new ClassLoader();
+    {
+        $loader = new ClassLoader();
+        $loader2 = new ClassLoader();
 
-		$loader->register();
-		$this->assertFalse($loader2->isRegistered());
-		$this->assertTrue($loader2->register());
-		$this->assertTrue($loader2->isRegistered());
-		$this->assertTrue($loader->isRegistered());
-		$this->assertTrue($loader->unregister());
-		$this->assertTrue($loader2->isRegistered());
-		$this->assertTrue($loader2->unregister());
-	}
+        $loader->register();
+        $this->assertFalse($loader2->isRegistered());
+        $this->assertTrue($loader2->register());
+        $this->assertTrue($loader2->isRegistered());
+        $this->assertTrue($loader->isRegistered());
+        $this->assertTrue($loader->unregister());
+        $this->assertTrue($loader2->isRegistered());
+        $this->assertTrue($loader2->unregister());
+    }
 
     public function testCallingAutoloadCall()
-	{
-		$loader = $this->getMock('Riimu\Kit\ClassLoader\ClassLoader', ['loadClass']);
-		$loader->expects($this->once())->method('loadClass')->will($this->returnValue(false));
+    {
+        $loader = $this->getMock('Riimu\Kit\ClassLoader\ClassLoader', ['loadClass']);
+        $loader->expects($this->once())->method('loadClass')->will($this->returnValue(false));
 
-		$this->assertTrue($loader->register());
-		$this->assertFalse(class_exists('ThisClassDoesNotExist'));
-		$this->assertTrue($loader->unregister());
-	}
+        $this->assertTrue($loader->register());
+        $this->assertFalse(class_exists('ThisClassDoesNotExist'));
+        $this->assertTrue($loader->unregister());
+    }
 
     public function testMissingClass ()
-	{
-		$loader = new ClassLoader();
-		$this->loadTest($loader, 'ThisClassDoesNotExist', false);
-	}
+    {
+        $loader = new ClassLoader();
+        $this->loadTest($loader, 'ThisClassDoesNotExist', false);
+    }
 
     public function testBasePath()
     {
@@ -102,8 +102,7 @@ class ClassLoaderTest extends \PHPUnit_Framework_TestCase
         $loader->useIncludePath(true);
         $this->loadTest($loader, 'pathSuccess', false);
 
-        set_include_path(get_include_path() . PATH_SEPARATOR . CLASS_BASE .
-            DIRECTORY_SEPARATOR . 'include_path');
+        set_include_path(get_include_path() . PATH_SEPARATOR . CLASS_BASE . DIRECTORY_SEPARATOR . 'include_path');
         $this->loadTest($loader, 'pathSuccess', true);
 
         set_include_path($includePath);
@@ -182,10 +181,10 @@ class ClassLoaderTest extends \PHPUnit_Framework_TestCase
         $this->loadTest($loader, 'FooBar\testns\PrefClassB', true);
     }
 
-	private function loadTest (ClassLoader $loader, $class, $exists)
-	{
+    private function loadTest (ClassLoader $loader, $class, $exists)
+    {
         $loader->setVerbose(true);
-		$this->assertSame($exists, $loader->loadClass($class));
-		$this->assertSame($exists, class_exists($class, false));
-	}
+        $this->assertSame($exists, $loader->loadClass($class));
+        $this->assertSame($exists, class_exists($class, false));
+    }
 }

@@ -9,6 +9,7 @@ namespace Riimu\Kit\ClassLoader;
  */
 class FileCacheClassLoaderTest extends \PHPUnit_Framework_TestCase
 {
+    public static $counter = 0;
     private $cachePath;
 
     public function tearDown()
@@ -18,6 +19,7 @@ class FileCacheClassLoaderTest extends \PHPUnit_Framework_TestCase
         }
 
         $this->cachePath = null;
+        self::$counter = 0;
     }
 
     public function testLoadingWithNoFile()
@@ -40,7 +42,6 @@ class FileCacheClassLoaderTest extends \PHPUnit_Framework_TestCase
 
     public function testSavingAndLoading()
     {
-        $GLOBALS['doubleLoadedIncluded'] = 0;
         $loader = $this->getLoader();
         $loader->loadClass('DoubleLoaded');
         $this->destroy($loader);
@@ -48,11 +49,11 @@ class FileCacheClassLoaderTest extends \PHPUnit_Framework_TestCase
         $loaderB = $this->getMock('Riimu\Kit\ClassLoader\FileCacheClassLoader', ['storeCache'], [$this->cachePath]);
         $loaderB->expects($this->never())->method('storeCache');
         $loaderB->loadClass('DoubleLoaded');
-        $this->assertSame(2, $GLOBALS['doubleLoadedIncluded']);
+        $this->assertSame(2, self::$counter);
     }
 
     /**
-     * @return \Riimu\Kit\ClassLoader\FileCachedLoader
+     * @return \Riimu\Kit\ClassLoader\FileCacheClassLoader
      */
     private function getLoader()
     {

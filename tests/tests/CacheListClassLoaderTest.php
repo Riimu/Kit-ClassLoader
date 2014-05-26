@@ -26,18 +26,20 @@ class CacheListClassLoaderTest extends \PHPUnit_Framework_TestCase
         $loader = new CacheListClassLoader([]);
         $loader->addBasePath(CLASS_BASE);
         $loader->setVerbose(true);
-        $this->assertFalse($loader->loadClass('NonExistantFile'));
+        $this->assertFalse($loader->loadClass('NonExistentFile'));
     }
 
     public function testFailLoadingCache()
     {
         $result = false;
-        $loader = new CacheListClassLoader(['NonExistantClass' => CLASS_BASE . DIRECTORY_SEPARATOR . 'NonExistantFile.php']);
+        $loader = new CacheListClassLoader(
+            ['NonExistentClass' => CLASS_BASE . DIRECTORY_SEPARATOR . 'NonExistentFile.php']
+        );
         $loader->setCacheHandler(function ($cache) use (& $result) {
             $result = $cache;
         });
         $loader->setVerbose(true);
-        $this->assertFalse(@$loader->loadClass('NonExistantClass'));
+        $this->assertFalse(@$loader->loadClass('NonExistentClass'));
         $this->assertEquals([], $result);
     }
 
