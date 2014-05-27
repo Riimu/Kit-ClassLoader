@@ -66,7 +66,7 @@ class CacheListClassLoader extends ClassLoader
     /**
      * Loads the class by first checking if the file path is cached.
      * @param string $class Full name of the class
-     * @return boolean True if the class was loaded, false if not
+     * @return boolean|null True if the class was loaded, false if not
      */
     public function loadClass($class)
     {

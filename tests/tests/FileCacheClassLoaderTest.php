@@ -7,7 +7,7 @@ namespace Riimu\Kit\ClassLoader;
  * @copyright Copyright (c) 2014, Riikka Kalliomäki
  * @license http://opensource.org/licenses/mit-license.php MIT License
  */
-class FileCacheClassLoaderTest extends \PHPUnit_Framework_TestCase
+class FileCacheClassLoaderTest extends TestCase
 {
     public static $counter = 0;
     private $cachePath;
@@ -63,6 +63,9 @@ class FileCacheClassLoaderTest extends \PHPUnit_Framework_TestCase
         return $loader;
     }
 
+    /**
+     * @param FileCacheClassLoader $loader
+     */
     private function destroy(FileCacheClassLoader & $loader)
     {
         $loader->unregister();

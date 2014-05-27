@@ -133,7 +133,7 @@ class ClassLoader
      *
      * Defaults to ['.php']
      *
-     * @param array $extensions Array of dot included file extensions to use
+     * @param string[] $extensions Array of dot included file extensions to use
      * @return ClassLoader Returns self for call chaining
      */
     public function setFileExtensions(array $extensions)
@@ -246,7 +246,7 @@ class ClassLoader
      * the class did not exist in the file that was included.
      *
      * @param string $class Full name of the class
-     * @return boolean True if the class was loaded, false if not
+     * @return boolean|null True if the class was loaded, false if not
      * @throws \RuntimeException if a file was included but no class was found
      * @throws \InvalidArgumentException If the class name is invalid or already exists
      */
@@ -297,7 +297,7 @@ class ClassLoader
     /**
      * Attempts to find a file for the given class using known paths.
      * @param string $class Full name of the class
-     * @return string|boolean Path to the class file or false if not found
+     * @return string|false Path to the class file or false if not found
      */
     public function findFile($class)
     {
@@ -314,7 +314,7 @@ class ClassLoader
     /**
      * Attempts to find the class file using prefix paths.
      * @param string $class Full name of the class
-     * @return string|boolean Path to the class file or false if not found
+     * @return string|false Path to the class file or false if not found
      */
     private function findFromPrefixPaths($class)
     {
@@ -367,7 +367,7 @@ class ClassLoader
      * Searches for the class file in given paths.
      * @param array $paths List of paths where to look
      * @param string $fname File name appended to the path
-     * @return string|boolean Path to the class file or false if not found
+     * @return string|false Path to the class file or false if not found
      */
     private function findPath($paths, $fname)
     {

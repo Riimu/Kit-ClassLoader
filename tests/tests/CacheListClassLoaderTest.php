@@ -7,7 +7,7 @@ namespace Riimu\Kit\ClassLoader;
  * @copyright Copyright (c) 2013, Riikka Kalliomäki
  * @license http://opensource.org/licenses/mit-license.php MIT License
  */
-class CacheListClassLoaderTest extends \PHPUnit_Framework_TestCase
+class CacheListClassLoaderTest extends TestCase
 {
     public function testCachingStorage()
     {
