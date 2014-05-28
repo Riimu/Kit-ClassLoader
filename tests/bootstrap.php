@@ -1,7 +1,5 @@
 <?php
 
-PHPUnit_Util_Blacklist::$blacklistedClassNames['Riimu\Kit\ClassLoader\TestCase'] = 1;
-
 require __DIR__ . '/constraints/TestCase.php';
 require __DIR__ . '/constraints/ClassLoaderLoads.php';
 

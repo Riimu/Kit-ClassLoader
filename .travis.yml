@@ -6,11 +6,10 @@ php:
 
 before_script:
   - composer require "satooshi/php-coveralls dev-master"
-  - composer require "phpunit/phpunit 4.1.*"
 
 script:
   - mkdir -p build/logs
-  - vendor/bin/phpunit --coverage-clover build/logs/clover.xml
+  - phpunit --coverage-clover build/logs/clover.xml
 
 after_script:
-  - php vendor/bin/coveralls
+  - php vendor/bin/coveralls -v
