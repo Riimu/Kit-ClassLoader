@@ -101,6 +101,6 @@ class FileCacheClassLoader extends CacheListClassLoader
      */
     private function escape($string)
     {
-        return strtr($string, ["'" => "\\'", "\\" => "\\\\"]);
+        return strtr($string, ["'" => "\\'", '\\' => '\\\\']);
     }
 }

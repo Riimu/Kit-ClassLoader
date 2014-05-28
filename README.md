@@ -1,12 +1,18 @@
 # PSR-0 and PSR-4 class autoloader #
 
 This library provides a class autoloader with support for both PSR-0 and
-PSR-4 class autoloading. It is possible to provide autoloading paths as base
-paths which are appended with entire class namespace structure or as prefix
-paths which replace part of the namespace with a specific directory path.
+PSR-4 class autoloading. It is possible to provide base directory paths that
+are used to load classes according to PSR-0 or you can provide namespace
+specific paths, which are used to load classes according to PSR-4.
+
+Loading classes according to PSR-0 means that the entire namespace structure
+must be included in the source directory tree. Additionally, undescores in
+the class name are treated as namespace separators. In PSR-4, on the other
+hand, it is possible to replace part of the namespace with a specific directory,
+which usually means smaller directory trees.
 
 The library also provides additional classes for caching class file locations
-to reduce the class autoload overhead.
+to reduce the overhead caused by class autoloading.
 
 API documentation is [available](http://kit.riimu.net/api/classloader/) and it
 can be generated using ApiGen.
@@ -17,7 +23,7 @@ can be generated using ApiGen.
 
 ## Installation ##
 
-Kit\ClassLoader can be easily installed using [Composer](http://getcomposer.org/),
+This library can be easily installed using [Composer](http://getcomposer.org/)
 by including the following dependency in your `composer.json`:
 
 ```json
