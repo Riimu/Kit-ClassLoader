@@ -8,10 +8,28 @@ paths which replace part of the namespace with a specific directory path.
 The library also provides additional classes for caching class file locations
 to reduce the class autoload overhead.
 
-API documentation for the classes can be generated using apigen.
+API documentation is [available](http://kit.riimu.net/api/classloader/) and it
+can be generated using ApiGen.
 
 [![Build Status](https://travis-ci.org/Riimu/Kit-ClassLoader.svg?branch=master)](https://travis-ci.org/Riimu/Kit-ClassLoader)
 [![Coverage Status](https://coveralls.io/repos/Riimu/Kit-ClassLoader/badge.png?branch=master)](https://coveralls.io/r/Riimu/Kit-ClassLoader?branch=master)
+[![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/Riimu/Kit-ClassLoader/badges/quality-score.png?b=master)](https://scrutinizer-ci.com/g/Riimu/Kit-ClassLoader/?branch=master)
+
+## Installation ##
+
+Kit\ClassLoader can be easily installed using [Composer](http://getcomposer.org/),
+by including the following dependency in your `composer.json`:
+
+```json
+{
+    "require": {
+        "riimu/kit-classloader": "4.*"
+    }
+}
+```
+
+The library will be the installed by running `composer install` and the classes
+can be loaded with simply including the `vendor/autoload.php` file.
 
 ## Usage ##
 

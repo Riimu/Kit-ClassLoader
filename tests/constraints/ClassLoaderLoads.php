@@ -19,7 +19,7 @@ class ClassLoaderLoads extends \PHPUnit_Framework_Constraint
 
     /**
      * @param \Riimu\Kit\ClassLoader\ClassLoader $loader
-     * @param $loads
+     * @param boolean $loads
      */
     public function __construct(\Riimu\Kit\ClassLoader\ClassLoader $loader, $loads)
     {
@@ -30,7 +30,7 @@ class ClassLoaderLoads extends \PHPUnit_Framework_Constraint
 
     /**
      * @param string $other
-     * @return bool
+     * @return boolean
      */
     protected function matches($other)
     {

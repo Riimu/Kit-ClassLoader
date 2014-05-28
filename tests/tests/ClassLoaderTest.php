@@ -87,9 +87,9 @@ class ClassLoaderTest extends TestCase
     {
         $loader = new ClassLoader();
         $loader->setVerbose(false);
-        $this->assertSame(null, $loader->loadClass('0'));
+        $this->assertSame(null, $loader->loadClass(''));
         $loader->setVerbose(true);
-        $loader->loadClass('0');
+        $loader->loadClass('');
     }
 
     public function testLoadingViaIncludePath()
