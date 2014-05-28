@@ -1,7 +1,8 @@
 # PSR-0 and PSR-4 class autoloader #
 
-This library provides a class autoloader with support for both PSR-0 and
-PSR-4 class autoloading. It is possible to provide base directory paths that
+This library provides a class autoloader with support for both
+[PSR-0](http://www.php-fig.org/psr/psr-0/) and [PSR-4](http://www.php-fig.org/psr/psr-4/)
+class autoloading. It is possible to provide base directory paths that
 are used to load classes according to PSR-0 or you can provide namespace
 specific paths, which are used to load classes according to PSR-4.
 
