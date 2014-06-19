@@ -170,6 +170,20 @@ class ClassLoader
     }
 
     /**
+     * Returns all added base paths in an array.
+     *
+     * The paths will be returned in an associative array, in which the key
+     * represents the namespace. Paths without namespace can be found in the
+     * key '' (empty string).
+     *
+     * @return mixed All added base paths.
+     */
+    public function getBasePaths()
+    {
+        return $this->paths['base'];
+    }
+
+    /**
      * Adds a PSR-4 compliant prefixed path for searching classes.
      *
      * In PSR-4, it is possible to replace part of namespace with specific
@@ -197,6 +211,20 @@ class ClassLoader
     }
 
     /**
+     * Returns all added prefix paths in an array.
+     *
+     * The paths will be returned in an associative array, in which the key
+     * represents the namespace. Paths without namespace can be found in the
+     * key '' (empty string).
+     *
+     * @return mixed All added prefix paths.
+     */
+    public function getPrefixPaths()
+    {
+        return $this->paths['prefix'];
+    }
+
+    /**
      * Canonizes the namespaces and paths and adds them to a list.
      * @param string $type Name of the variable where to store
      * @param string|array $path Single path or array of paths
@@ -206,10 +234,12 @@ class ClassLoader
     {
         $paths = $namespace !== null
             ? [$namespace => $path]
-            : (!is_array($path) || isset($path[0]) ? ['' => $path] : $path);
+            : (!is_array($path) ? ['' => $path] : $path);
 
         foreach ($paths as $key => $value) {
-            if ($key !== '') {
+            if (is_int($key)) {
+                $key = '';
+            } elseif ($key !== '') {
                 $key = trim($key, '\\') . '\\';
             }
 

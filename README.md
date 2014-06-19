@@ -40,30 +40,108 @@ can be loaded with simply including the `vendor/autoload.php` file.
 
 ## Usage ##
 
-Basically, PSR-0 autoloading means that the entire class namespace structure
-is reflected in the directory tree. For example, the file class 'Foo\Bar\Baz'
-is located in '/path/to/classes/Foo/Bar/Baz.php'. Easiest way to autoload your
-classes is to simply put them in directories according to their namespaces and
-add the base path to the class loader. For example:
+The autoloader supports both PSR-0 and PSR-4 class autoloading standards via
+the methods `ClassLoader::addBasePath()` and `ClassLoader::addPrefixPath()`
+respectively. You do not need to understand these standards to use the class
+loader, simply use the method that works best for you.
+
+### PSR-0 class autoloading ###
+
+PSR-0 class autoloading defines that class files must be placed in a directory
+tree that reflects their namespace. For example, the class 'Foo\Bar\Baz' could
+be located in a file '/path/to/classes/Foo/Bar/Baz.php'. This method is usually
+the simplest way to place your class files.
+
+Using the `addBasePath()` method, you can define the base directories where to
+look for classes. The load the class mentioned above, you could use the
+following code:
 
 ```php
 <?php
 $loader = new Riimu\Kit\ClassLoader\ClassLoader();
 $loader->addBasePath('/path/to/classes/');
 $loader->register();
+
+$obj = new Foo\Bar\Baz();
 ```
 
-PSR-4 autoloading, however, does not require that file paths necessarily reflect
-the entire class namespace stucture. It's possible to replace part of the
-namespace with a specific directory. For example, if your 'Foo\Bar\Baz.php' is
-located in '/path/to/Library/Baz.php', you could do the following:
+If a specific directory only applies to a specific namespace, you can use the
+second parameter to define the namespace as well. The directory still needs to
+point to the base directory for the namespace. For example:
+
+```php
+<?php
+$loader = new Riimu\Kit\ClassLoader\ClassLoader();
+$loader->addBasePath('/path/to/classes/', 'Foo\Bar');
+$loader->register();
+
+$obj = new Foo\Bar\Baz();
+```
+
+Note that PSR-0 also states that underscores in the class name are treated as
+namespace separators (but not in the namespaces themselves). So, even if your
+class was called 'Foo\Bar_Baz', both of the above examples would still work.
+Regardless of whether the namespace are defined using underscore or a backslash,
+the namespace parameter in the function must use backslashes.
+
+### PSR-4 class autoloading ###
+
+Unlike PSR-0, the PSR-0 class autoloading standard does not require classes to
+be placed in a directory trees that reflect their namespace. Instead, part of
+the namespace can be replaced by a specific path.
+
+For example, if your class 'Foo\Bar\Baz' was located in the file
+'/path/to/Library/Baz.php', you could register the path using `addPrefixPath()`
+and load the class as demonstrated in the following example:
 
 ```php
 <?php
 $loader = new Riimu\Kit\ClassLoader\ClassLoader();
 $loader->addPrefixPath('/path/to/Library/', 'Foo\Bar');
 $loader->register();
+
+$obj = new Foo\Bar\Baz();
 ```
+
+This allows shorter directory trees as the entire namespace does not need to
+be reflected in the directory structure. It's also possible to omit the
+namespace argument, in which case the path will work just like in PSR-0
+autoloading with the exception that the underscores in the class name will not
+be treated as namespace separators.
+
+### Adding multiple paths ###
+
+While you could simply call the methods to add paths multiple times, it's
+possible to add multiple paths using an array. This usually makes configuration
+much easier. You can either add multiple base paths using a list like:
+
+```php
+<?php
+$loader = new Riimu\Kit\ClassLoader\ClassLoader();
+$loader->addPrefixPath([
+    '/path/to/classes/',
+    '/other/path/',
+]);
+$loader->register();
+```
+
+Or you can add namespace specific paths by defining the namespace in the key
+like:
+
+```php
+<?php
+$loader = new Riimu\Kit\ClassLoader\ClassLoader();
+$loader->addPrefixPath([
+    'Foo\Bar' => '/path/to/classes/',
+    'Other\Namesapace' => ['/other/path/', '/some/other'],
+]);
+$loader->register();
+```
+
+As shown in the exampe above, you can also provide an array of paths for
+specific namespace. This also works if you provide a list of paths and the
+namespace as the second parameter. The namespaces are treated according to
+which loading standard you are using.
 
 For working examples, see the files in the examples directory.
 
