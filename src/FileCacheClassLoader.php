@@ -24,7 +24,7 @@ class FileCacheClassLoader extends CacheListClassLoader
 
     /**
      * Cache to store at the end of request.
-     * @var array
+     * @var array|null
      */
     private $store;
 
@@ -54,7 +54,7 @@ class FileCacheClassLoader extends CacheListClassLoader
      */
     public function __destruct()
     {
-        if (isset($this->store)) {
+        if ($this->store !== null) {
             file_put_contents($this->cacheFile, $this->createCache($this->store), LOCK_EX);
         }
     }

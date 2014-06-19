@@ -237,11 +237,7 @@ class ClassLoader
             : (!is_array($path) ? ['' => $path] : $path);
 
         foreach ($paths as $key => $value) {
-            if (is_int($key)) {
-                $key = '';
-            } elseif ($key !== '') {
-                $key = trim($key, '\\') . '\\';
-            }
+            $key = is_int($key) || $key === '' ? '' : trim($key, '\\') . '\\';
 
             if (!isset($this->paths[$type][$key])) {
                 $this->paths[$type][$key] = [];
