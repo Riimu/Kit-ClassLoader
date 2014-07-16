@@ -86,7 +86,7 @@ the namespace parameter in the function must use backslashes.
 
 ### PSR-4 class autoloading ###
 
-Unlike PSR-0, the PSR-0 class autoloading standard does not require classes to
+Unlike PSR-0, the PSR-4 class autoloading standard does not require classes to
 be placed in a directory trees that reflect their namespace. Instead, part of
 the namespace can be replaced by a specific path.
 
