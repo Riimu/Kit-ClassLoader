@@ -244,7 +244,6 @@ class ClassLoader
             }
 
             foreach ((array) $value as $new) {
-                $new = rtrim($new, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
                 $this->paths[$type][$key][] = $new;
             }
         }
@@ -273,38 +272,28 @@ class ClassLoader
      */
     public function loadClass($class)
     {
-        $success = false;
-
-        if ($this->isValidClass($class)) {
-            $file = $this->findFile($class);
-
-            if ($file !== false && $this->loadFile($file, $class)) {
-                $success = true;
-            }
+        if ($this->verbose) {
+            return $this->load($class);
         }
 
-        if ($this->verbose) {
-            return $success;
+        try {
+            $this->load($class);
+        } catch (\Exception $exception) {
+            // Ignore exceptions as per PSR-4
         }
     }
 
-    /**
-     * Makes sure the class name is valid and it is not an existing class.
-     * @param string $class Full name of the class
-     * @return boolean True if the class name is valid, false if not
-     * @throws \InvalidArgumentException If the class name is invalid
-     */
-    private function isValidClass($class)
+    private function load($class)
     {
-        if (!is_string($class) || $class === '' || $this->classExists($class)) {
-            if ($this->verbose) {
-                throw new \InvalidArgumentException('Invalid class or the class already exists');
-            }
-
-            return false;
+        if ($this->isLoaded($class)) {
+            throw new \InvalidArgumentException("Attempting to load class '$class' that already exists'");
         }
 
-        return true;
+        if ($file = $this->findFile($class)) {
+            return $this->loadFile($file, $class);
+        }
+
+        return false;
     }
 
     /**
@@ -315,13 +304,14 @@ class ClassLoader
     public function findFile($class)
     {
         $class = ltrim($class, '\\');
-        $file = $this->findFromPrefixPaths($class);
 
-        if ($file === false) {
-            $file = $this->findFromBasePaths($class);
+        if (!$class) {
+            return false;
+        } elseif ($file = $this->findPrefixPath($class)) {
+            return $file;
         }
 
-        return $file;
+        return $this->findBasePath($class);
     }
 
     /**
@@ -329,9 +319,9 @@ class ClassLoader
      * @param string $class Full name of the class
      * @return string|false Path to the class file or false if not found
      */
-    private function findFromPrefixPaths($class)
+    private function findPrefixPath($class)
     {
-        return $this->findFromPaths($this->paths['prefix'], $class, true);
+        return $this->findNamespace($this->paths['prefix'], $class, true);
     }
 
     /**
@@ -339,22 +329,18 @@ class ClassLoader
      * @param string $class Full name of the class
      * @return string|false Path to the class file or false if not found
      */
-    private function findFromBasePaths($class)
+    private function findBasePath($class)
     {
         $canon = preg_replace('/_(?=[^\\\\]*$)/', '\\', $class);
         $basePaths = $this->paths['base'];
 
         if ($this->useIncludePath) {
-            if (!isset($basePaths[''])) {
-                $basePaths[''] = [];
-            }
-
-            foreach (explode(PATH_SEPARATOR, get_include_path()) as $path) {
-                $basePaths[''][] = rtrim($path, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
-            }
+            $basePaths[''] = isset($basePaths[''])
+                ? array_merge($basePaths[''], explode(PATH_SEPARATOR, get_include_path()))
+                : explode(PATH_SEPARATOR, get_include_path());
         }
 
-        return $this->findFromPaths($basePaths, $canon, false);
+        return $this->findNamespace($basePaths, $canon, false);
     }
 
     /**
@@ -364,15 +350,17 @@ class ClassLoader
      * @param boolean $truncate True to remove namespace from file path
      * @return string|false Path to the class file or false if not found
      */
-    private function findFromPaths($paths, $class, $truncate)
+    private function findNamespace($paths, $class, $truncate)
     {
         foreach ($paths as $namespace => $directories) {
-            $length = strlen($namespace);
-            if (strncmp($namespace, $class, $length) === 0) {
-                $file = $truncate ? substr($class, $length) : $class;
-                if ($fullPath = $this->findPath($directories, strtr($file, ['\\' => DIRECTORY_SEPARATOR]))) {
-                    return $fullPath;
-                }
+            if (strncmp($class, $namespace, strlen($namespace)) !== 0) {
+                continue;
+            }
+
+            $file = $truncate ? substr($class, strlen($namespace)) : $class;
+
+            if ($fullPath = $this->findDirectory($directories, $file)) {
+                return $fullPath;
             }
         }
 
@@ -385,12 +373,18 @@ class ClassLoader
      * @param string $file File name appended to the path
      * @return string|false Path to the class file or false if not found
      */
-    private function findPath($paths, $file)
+    private function findDirectory($paths, $file)
     {
         foreach ($paths as $path) {
+            if (($path = trim($path)) === '') {
+                continue;
+            }
+
+            $filePath = preg_replace('/[\\/\\\\]+/', DIRECTORY_SEPARATOR, $path . '/' . $file);
+
             foreach ($this->fileExtensions as $ext) {
-                if (file_exists($path . $file . $ext)) {
-                    return $path . $file . $ext;
+                if (file_exists($filePath . $ext)) {
+                    return $filePath . $ext;
                 }
             }
         }
@@ -409,12 +403,8 @@ class ClassLoader
     {
         include $file;
 
-        if (!$this->classExists($class)) {
-            if ($this->verbose) {
-                throw new \RuntimeException("Included '$file' but '$class' does not exist");
-            }
-
-            return false;
+        if (!$this->isLoaded($class)) {
+            throw new \RuntimeException("The included '$file' did not define class '$class'");
         }
 
         return true;
@@ -425,7 +415,7 @@ class ClassLoader
      * @param string $class Full name of the class
      * @return boolean True if it exists, false if it does not exists
      */
-    private function classExists($class)
+    private function isLoaded($class)
     {
         return class_exists($class, false) ||
             interface_exists($class, false) ||

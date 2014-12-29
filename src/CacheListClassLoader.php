@@ -95,10 +95,7 @@ class CacheListClassLoader extends ClassLoader
      */
     protected function loadFile($file, $class)
     {
-        if (!parent::loadFile($file, $class)) {
-            return false;
-        }
-
+        parent::loadFile($file, $class);
         $this->cache[$class] = $file;
         $this->saveCache();
         return true;

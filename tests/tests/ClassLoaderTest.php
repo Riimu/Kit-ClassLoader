@@ -80,18 +80,6 @@ class ClassLoaderTest extends TestCase
         $loader->loadClass('Riimu\Kit\ClassLoader\ClassLoader');
     }
 
-    /**
-     * @expectedException \InvalidArgumentException
-     */
-    public function testInvalidClassName()
-    {
-        $loader = new ClassLoader();
-        $loader->setVerbose(false);
-        $this->assertSame(null, $loader->loadClass(''));
-        $loader->setVerbose(true);
-        $loader->loadClass('');
-    }
-
     public function testLoadingViaIncludePath()
     {
         $loader = new ClassLoader();
@@ -182,5 +170,19 @@ class ClassLoaderTest extends TestCase
         $this->assertClassLoads('FooBar\IsNotClass', $loader, false);
         $this->assertClassLoads('\FooBar\PrefClassA', $loader, true);
         $this->assertClassLoads('FooBar\testns\PrefClassB', $loader, true);
+    }
+
+    public function testFindingEmptyClass()
+    {
+        $loader = new ClassLoader();
+        $this->assertFalse($loader->findFile(''));
+    }
+
+    public function testFindingInEmptyDirectory()
+    {
+        $loader = new ClassLoader();
+        $loader->addBasePath('');
+        $loader->setVerbose(true);
+        $this->assertFalse($loader->loadClass('ThisClassDoesNotExist'));
     }
 }

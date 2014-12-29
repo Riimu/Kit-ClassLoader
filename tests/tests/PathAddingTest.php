@@ -12,18 +12,12 @@ class PathAddingTest extends \PHPUnit_Framework_TestCase
     public function testDirectorySeparatorCanonization()
     {
         $loader = new ClassLoader();
-        $loader->addBasePath(path(['path', 'to', 'classes']));
-        $loader->addPrefixPath(path(['path', 'to', 'classes']));
-        $this->assertPathsAre([
-            '' => [path(['path', 'to', 'classes'], true)],
-        ], $loader);
+        $loader->addBasePath(__DIR__ . '/../tests/', '');
+        $this->assertSame(path([__DIR__, '..', 'tests', 'PathAddingTest.php']), $loader->findFile('PathAddingTest'));
 
         $loader2 = new ClassLoader();
-        $loader2->addBasePath(path(['path', 'to', 'classes'], true));
-        $loader2->addPrefixPath(path(['path', 'to', 'classes'], true));
-        $this->assertPathsAre([
-            '' => [path(['path', 'to', 'classes'], true)],
-        ], $loader2);
+        $loader2->addBasePath(__DIR__ . '\\..\\tests\\', '');
+        $this->assertSame(path([__DIR__, '..', 'tests', 'PathAddingTest.php']), $loader2->findFile('PathAddingTest'));
     }
 
     public function testNameSpaceSeparatorCanonization()
@@ -32,14 +26,14 @@ class PathAddingTest extends \PHPUnit_Framework_TestCase
         $loader->addBasePath(path(['path', 'to', 'classes']), 'Foo\Bar');
         $loader->addPrefixPath(path(['path', 'to', 'classes']), 'Foo\Bar');
         $this->assertPathsAre([
-            'Foo\Bar\\' => [path(['path', 'to', 'classes'], true)],
+            'Foo\\Bar\\' => [path(['path', 'to', 'classes'])],
         ], $loader);
 
         $loader2 = new ClassLoader();
-        $loader2->addBasePath(path(['path', 'to', 'classes']), 'Foo\Bar\\');
-        $loader2->addPrefixPath(path(['path', 'to', 'classes']), 'Foo\Bar\\');
+        $loader2->addBasePath(path(['path', 'to', 'classes']), '\\Foo\\Bar\\');
+        $loader2->addPrefixPath(path(['path', 'to', 'classes']), '\\Foo\\Bar\\');
         $this->assertPathsAre([
-            'Foo\Bar\\' => [path(['path', 'to', 'classes'], true)],
+            'Foo\\Bar\\' => [path(['path', 'to', 'classes'])],
         ], $loader2);
     }
 
