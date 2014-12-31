@@ -16,16 +16,10 @@ namespace Riimu\Kit\ClassLoader;
  */
 class FileCacheClassLoader extends CacheListClassLoader
 {
-    /**
-     * Path to the cache file.
-     * @var string
-     */
+    /** @var string Path to the cache file */
     private $cacheFile;
 
-    /**
-     * Cache to store at the end of request.
-     * @var array|null
-     */
+    /** @var string[]|null Cache to store at the end of request */
     private $store;
 
     /**
@@ -85,22 +79,14 @@ class FileCacheClassLoader extends CacheListClassLoader
     private function createCache(array $cache)
     {
         ksort($cache);
+
         $string = '<?php return [' . PHP_EOL;
+        $format = "\t%s => %s," . PHP_EOL;
 
         foreach ($cache as $key => $value) {
-            $string .= sprintf("\t'%s' => '%s'," . PHP_EOL, $this->escape($key), $this->escape($value));
+            $string .= sprintf($format, var_export($key, true), var_export($value, true));
         }
 
         return  $string . '];' . PHP_EOL;
-    }
-
-    /**
-     * Escapes strings to be put into single quotes.
-     * @param string $string String to escape
-     * @return string Escaped string
-     */
-    private function escape($string)
-    {
-        return strtr($string, ["'" => "\\'", '\\' => '\\\\']);
     }
 }

@@ -20,35 +20,20 @@ namespace Riimu\Kit\ClassLoader;
  */
 class ClassLoader
 {
-    /**
-     * List of namespace specific paths
-     * @var array
-     */
+    /** @var array List of namespace specific paths */
     private $paths;
 
-    /**
-     * List of file extensions that are used for file inclusion.
-     * @var array
-     */
+    /** @var string[] List of file extensions used to find files */
     private $fileExtensions;
 
-    /**
-     * Whether to look for classes in include_path or not.
-     * @var boolean
-     */
+    /** @var boolean Whether to look for classes in include_path or not */
     private $useIncludePath;
 
-    /**
-     * Whether to return values and throw exceptions from loadClass or not
-     * @var boolean
-     */
-    protected $verbose;
-
-    /**
-     * The autoload method use to load classes.
-     * @var callable
-     */
+    /** @var callable The autoload method use to load classes */
     private $loader;
+
+    /** @var boolean Whether loadClass should return values and throw exceptions or not */
+    protected $verbose;
 
     /**
      * Creates a new ClassLoader instance.
@@ -109,10 +94,10 @@ class ClassLoader
      * Sets whether to return values and throw exceptions from loadClass.
      *
      * PSR-4 requires that autoloaders do not return values and do not throw
-     * exceptions from the autoloader. By default, the class verbose mode is set
-     * to false for PSR-4 compliance.
+     * exceptions from the autoloader. By default, the verbose mode is set to
+     * false for PSR-4 compliance.
      *
-     * @param boolean $enabled True for return values and exceptions, false for none
+     * @param boolean $enabled True to return values and exceptions, false to not
      * @return ClassLoader Returns self for call chaining
      */
     public function setVerbose($enabled)
@@ -122,7 +107,7 @@ class ClassLoader
     }
 
     /**
-     * Sets list of dot included file extensions to use for inclusion.
+     * Sets list of dot included file extensions to use for finding files.
      *
      * Defaults to ['.php']
      *
@@ -170,7 +155,7 @@ class ClassLoader
     }
 
     /**
-     * Returns all added base paths in an array.
+     * Returns all added base paths as an array.
      *
      * The paths will be returned in an associative array, in which the key
      * represents the namespace. Paths without namespace can be found in the
@@ -201,7 +186,7 @@ class ClassLoader
      * can just provide a single associative array as the parameter.
      *
      * @param string|array $path Single path or array of paths
-     * @param string $namespace The namespace prefix the given path replaces
+     * @param string|null $namespace The namespace prefix the given path replaces
      * @return ClassLoader Returns self for call chaining
      */
     public function addPrefixPath($path, $namespace = null)
@@ -211,7 +196,7 @@ class ClassLoader
     }
 
     /**
-     * Returns all added prefix paths in an array.
+     * Returns all added prefix paths ar an array.
      *
      * The paths will be returned in an associative array, in which the key
      * represents the namespace. Paths without namespace can be found in the
@@ -250,7 +235,7 @@ class ClassLoader
     }
 
     /**
-     * Attempts to load the class using provided class paths.
+     * Attempts to load the class using known class paths.
      *
      * The class is first attempted to load using the prefixed paths and then
      * using the base paths. If the use of include_path is enabled, the paths
@@ -262,13 +247,13 @@ class ClassLoader
      *
      * If verbose mode is enabled, then the method will return true if the class
      * loading was successful and false if not. Additionally the method will
-     * throw an exception if the class name is invalid, it already exists or if
-     * the class did not exist in the file that was included.
+     * throw an exception if the class already exists or if the class was not
+     * defined in the file that was included.
      *
      * @param string $class Full name of the class
      * @return boolean|null True if the class was loaded, false if not
-     * @throws \RuntimeException if a file was included but no class was found
-     * @throws \InvalidArgumentException If the class name is invalid or already exists
+     * @throws \RuntimeException If the class was not defined in the included file
+     * @throws \InvalidArgumentException If the class already exists
      */
     public function loadClass($class)
     {
@@ -305,46 +290,23 @@ class ClassLoader
     {
         $class = ltrim($class, '\\');
 
-        if (!$class) {
-            return false;
-        } elseif ($file = $this->findPrefixPath($class)) {
+        if ($file = $this->findNamespace($this->paths['prefix'], $class, true)) {
             return $file;
         }
 
-        return $this->findBasePath($class);
-    }
+        $class = preg_replace('/_(?=[^\\\\]*$)/', '\\', $class);
 
-    /**
-     * Attempts to find the class file using prefix paths.
-     * @param string $class Full name of the class
-     * @return string|false Path to the class file or false if not found
-     */
-    private function findPrefixPath($class)
-    {
-        return $this->findNamespace($this->paths['prefix'], $class, true);
-    }
-
-    /**
-     * Attempts to find the class file using base paths.
-     * @param string $class Full name of the class
-     * @return string|false Path to the class file or false if not found
-     */
-    private function findBasePath($class)
-    {
-        $canon = preg_replace('/_(?=[^\\\\]*$)/', '\\', $class);
-        $basePaths = $this->paths['base'];
-
-        if ($this->useIncludePath) {
-            $basePaths[''] = isset($basePaths[''])
-                ? array_merge($basePaths[''], explode(PATH_SEPARATOR, get_include_path()))
-                : explode(PATH_SEPARATOR, get_include_path());
+        if ($file = $this->findNamespace($this->paths['base'], $class, false)) {
+            return $file;
+        } elseif ($this->useIncludePath) {
+            return $this->findDirectory(explode(PATH_SEPARATOR, get_include_path()), $class);
         }
 
-        return $this->findNamespace($basePaths, $canon, false);
+        return false;
     }
 
     /**
-     * Attempt finding the class file in namespace specific paths
+     * Attempt finding the class                                                                                                        file in namespace specific paths
      * @param array $paths Namespace path definitions
      * @param string $class Canonized class name
      * @param boolean $truncate True to remove namespace from file path
@@ -353,18 +315,24 @@ class ClassLoader
     private function findNamespace($paths, $class, $truncate)
     {
         foreach ($paths as $namespace => $directories) {
-            if (strncmp($class, $namespace, strlen($namespace)) !== 0) {
-                continue;
-            }
-
-            $file = $truncate ? substr($class, strlen($namespace)) : $class;
-
-            if ($fullPath = $this->findDirectory($directories, $file)) {
+            if ($fullPath = $this->findFullPath($class, $namespace, $directories, $truncate)) {
                 return $fullPath;
             }
         }
 
         return false;
+    }
+
+    private function findFullPath($class, $namespace, $directories, $truncate)
+    {
+        if (strncmp($class, $namespace, strlen($namespace)) !== 0) {
+            return false;
+        }
+
+        return $this->findDirectory(
+            $directories,
+            $truncate ? substr($class, strlen($namespace)) : $class
+        );
     }
 
     /**
@@ -396,8 +364,8 @@ class ClassLoader
      * Includes the file and makes sure the class exists.
      * @param string $file Full path to the file
      * @param string $class Full name of the class
-     * @return boolean True if the class was loaded, false if not
-     * @throws \RuntimeException If a file was loaded, but no class was found
+     * @return boolean Always returns true
+     * @throws \RuntimeException If the class was not defined in the included file
      */
     protected function loadFile($file, $class)
     {

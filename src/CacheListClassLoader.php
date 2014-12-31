@@ -17,16 +17,10 @@ namespace Riimu\Kit\ClassLoader;
  */
 class CacheListClassLoader extends ClassLoader
 {
-    /**
-     * List of class file locations.
-     * @var array
-     */
+    /** @var string[] List of class file locations */
     private $cache;
 
-    /**
-     * Callback used for storing the cache.
-     * @var callback
-     */
+    /** @var callable|null Callback used for storing the cache */
     private $cacheHandler;
 
     /**
@@ -36,7 +30,7 @@ class CacheListClassLoader extends ClassLoader
      * handler. If no cache exists yet, an empty array should be provided
      * instead.
      *
-     * @param array $cache The cached paths stored by your cache handler
+     * @param string[] $cache The cached paths stored by your cache handler
      */
     public function __construct(array $cache)
     {
@@ -91,7 +85,8 @@ class CacheListClassLoader extends ClassLoader
      * Loads the class from the given file and stores the path into cache.
      * @param string $file Full path to the file
      * @param string $class Full name of the class
-     * @return boolean True if the class was loaded, false if not
+     * @return boolean Always returns true
+     * @throws \RuntimeException If the class was not defined in the included file
      */
     protected function loadFile($file, $class)
     {
