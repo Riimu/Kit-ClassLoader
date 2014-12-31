@@ -20,8 +20,11 @@ namespace Riimu\Kit\ClassLoader;
  */
 class ClassLoader
 {
-    /** @var array List of namespace specific paths */
-    private $paths;
+    /** @var array List of PSR-4 compatible paths by namespace */
+    private $prefixPaths;
+
+    /** @var array List of PSR-0 compatible paths by namespace */
+    private $basePaths;
 
     /** @var string[] List of file extensions used to find files */
     private $fileExtensions;
@@ -40,7 +43,8 @@ class ClassLoader
      */
     public function __construct()
     {
-        $this->paths = ['base' => [], 'prefix' => []];
+        $this->prefixPaths = [];
+        $this->basePaths = [];
         $this->fileExtensions = ['.php'];
         $this->useIncludePath = false;
         $this->verbose = true;
@@ -145,12 +149,12 @@ class ClassLoader
      * and the values are either a single path or array of paths.
      *
      * @param string|array $path Single path or array of paths
-     * @param string $namespace Limit the path only to specific namespace
+     * @param string|null $namespace Limit the path only to specific namespace
      * @return ClassLoader Returns self for call chaining
      */
     public function addBasePath($path, $namespace = null)
     {
-        $this->addPath('base', $path, $namespace);
+        $this->addPath($this->basePaths, $path, $namespace);
         return $this;
     }
 
@@ -165,7 +169,7 @@ class ClassLoader
      */
     public function getBasePaths()
     {
-        return $this->paths['base'];
+        return $this->basePaths;
     }
 
     /**
@@ -191,7 +195,7 @@ class ClassLoader
      */
     public function addPrefixPath($path, $namespace = null)
     {
-        $this->addPath('prefix', $path, $namespace);
+        $this->addPath($this->prefixPaths, $path, $namespace);
         return $this;
     }
 
@@ -206,16 +210,16 @@ class ClassLoader
      */
     public function getPrefixPaths()
     {
-        return $this->paths['prefix'];
+        return $this->prefixPaths;
     }
 
     /**
      * Canonizes the namespaces and paths and adds them to a list.
-     * @param string $type Name of the variable where to store
+     * @param string $list List of paths to modify
      * @param string|array $path Single path or array of paths
      * @param string|null $namespace The namespace definition
      */
-    private function addPath($type, $path, $namespace)
+    private function addPath(& $list, $path, $namespace)
     {
         $paths = $namespace !== null
             ? [$namespace => $path]
@@ -224,12 +228,12 @@ class ClassLoader
         foreach ($paths as $key => $value) {
             $key = is_int($key) || $key === '' ? '' : trim($key, '\\') . '\\';
 
-            if (!isset($this->paths[$type][$key])) {
-                $this->paths[$type][$key] = [];
+            if (!isset($list[$key])) {
+                $list[$key] = [];
             }
 
             foreach ((array) $value as $new) {
-                $this->paths[$type][$key][] = $new;
+                $list[$key][] = $new;
             }
         }
     }
@@ -290,13 +294,13 @@ class ClassLoader
     {
         $class = ltrim($class, '\\');
 
-        if ($file = $this->findNamespace($this->paths['prefix'], $class, true)) {
+        if ($file = $this->findNamespace($this->prefixPaths, $class, true)) {
             return $file;
         }
 
         $class = preg_replace('/_(?=[^\\\\]*$)/', '\\', $class);
 
-        if ($file = $this->findNamespace($this->paths['base'], $class, false)) {
+        if ($file = $this->findNamespace($this->basePaths, $class, false)) {
             return $file;
         } elseif ($this->useIncludePath) {
             return $this->findDirectory(explode(PATH_SEPARATOR, get_include_path()), $class);
@@ -336,24 +340,30 @@ class ClassLoader
     }
 
     /**
-     * Searches for the class file in given paths.
-     * @param array $paths List of paths where to look
-     * @param string $file File name appended to the path
+     * Searches for the class file in the given directories.
+     * @param string[] $directories List of directory paths where to look for the class
+     * @param string $class Part of the class name that translates to the file name
      * @return string|false Path to the class file or false if not found
      */
-    private function findDirectory($paths, $file)
+    private function findDirectory($directories, $class)
     {
-        foreach ($paths as $path) {
-            if (($path = trim($path)) === '') {
-                continue;
+        foreach ($directories as $directory) {
+            $directory = trim($directory);
+            $path = preg_replace('/[\\/\\\\]+/', DIRECTORY_SEPARATOR, $directory . '/' . $class);
+
+            if ($directory && $fullPath = $this->findExtension($path)) {
+                return $fullPath;
             }
+        }
 
-            $filePath = preg_replace('/[\\/\\\\]+/', DIRECTORY_SEPARATOR, $path . '/' . $file);
+        return false;
+    }
 
-            foreach ($this->fileExtensions as $ext) {
-                if (file_exists($filePath . $ext)) {
-                    return $filePath . $ext;
-                }
+    private function findExtension($path)
+    {
+        foreach ($this->fileExtensions as $ext) {
+            if (file_exists($path . $ext)) {
+                return $path . $ext;
             }
         }
 

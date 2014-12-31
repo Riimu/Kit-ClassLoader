@@ -64,7 +64,7 @@ class FileCacheClassLoader extends CacheListClassLoader
 
     /**
      * Stores the cache to be saved at the end of the request.
-     * @param array $cache Class location cache
+     * @param string[] $cache Class location cache
      */
     public function storeCache(array $cache)
     {
