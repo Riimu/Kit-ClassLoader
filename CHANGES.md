@@ -2,6 +2,7 @@
 
 ## v4.2.0 (?) ##
 
+  * ClassLoader::findFile now does better job of canonizing directory separators
   * ClassLoader::loadFile will now always return true or thrown an exception,
     irregardless of verbose setting
   * Class loader will now look in include_path last, for real

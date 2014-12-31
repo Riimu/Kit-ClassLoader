@@ -221,20 +221,29 @@ class ClassLoader
      */
     private function addPath(& $list, $path, $namespace)
     {
-        $paths = $namespace !== null
-            ? [$namespace => $path]
-            : (!is_array($path) ? ['' => $path] : $path);
+        if ($namespace !== null) {
+            $paths = [$namespace => $path];
+        } else {
+            $paths = is_array($path) ? $path : ['' => $path];
+        }
 
-        foreach ($paths as $key => $value) {
-            $key = is_int($key) || $key === '' ? '' : trim($key, '\\') . '\\';
+        foreach ($paths as $ns => $directories) {
+            $this->addNamespacePaths($list, is_int($ns) ? '' : $ns, $directories);
+        }
+    }
 
-            if (!isset($list[$key])) {
-                $list[$key] = [];
-            }
+    private function addNamespacePaths(& $list, $namespace, $paths)
+    {
+        $namespace = $namespace === '' ? '' : trim($namespace, '\\') . '\\';
 
-            foreach ((array) $value as $new) {
-                $list[$key][] = $new;
-            }
+        if (!isset($list[$namespace])) {
+            $list[$namespace] = [];
+        }
+
+        if (is_array($paths)) {
+            $list[$namespace] = array_merge($list[$namespace], $paths);
+        } else {
+            $list[$namespace][] = $paths;
         }
     }
 
