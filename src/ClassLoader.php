@@ -228,7 +228,7 @@ class ClassLoader
         }
 
         foreach ($paths as $ns => $directories) {
-            $this->addNamespacePaths($list, is_int($ns) ? '' : $ns, $directories);
+            $this->addNamespacePaths($list, ltrim($ns, '0123456789'), $directories);
         }
     }
 
