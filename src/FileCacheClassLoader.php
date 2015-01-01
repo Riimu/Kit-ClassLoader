@@ -19,7 +19,7 @@ class FileCacheClassLoader extends CacheListClassLoader
     /** @var string Path to the cache file */
     private $cacheFile;
 
-    /** @var string[]|null Cache to store at the end of request */
+    /** @var string[]|null Cache to store at the end of the request */
     private $store;
 
     /**
@@ -46,10 +46,11 @@ class FileCacheClassLoader extends CacheListClassLoader
     /**
      * Writes the cache file if changes were made.
      */
-    public function __destruct()
+    public function saveCacheFile()
     {
         if ($this->store !== null) {
             file_put_contents($this->cacheFile, $this->createCache($this->store), LOCK_EX);
+            $this->store = null;
         }
     }
 
@@ -68,6 +69,10 @@ class FileCacheClassLoader extends CacheListClassLoader
      */
     public function storeCache(array $cache)
     {
+        if ($this->store === null) {
+            register_shutdown_function([$this, 'saveCacheFile']);
+        }
+
         $this->store = $cache;
     }
 

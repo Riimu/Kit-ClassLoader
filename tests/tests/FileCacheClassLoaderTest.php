@@ -69,11 +69,7 @@ class FileCacheClassLoaderTest extends TestCase
     private function destroy(FileCacheClassLoader & $loader)
     {
         $loader->unregister();
-        $loader->__destruct();
-        $reflect = new \ReflectionClass($loader);
-        $prop = $reflect->getProperty('store');
-        $prop->setAccessible(true);
-        $prop->setValue($loader, null);
+        $loader->saveCacheFile();
         $loader = null;
     }
 }

@@ -3,16 +3,23 @@
 namespace Riimu\Kit\ClassLoader;
 
 /**
- * Class autoloader with PSR-0 and PSR-4 compatibility.
+ * Class loader that supports both PSR-0 and PSR-4 autoloading standards.
  *
- * ClassLoader provides both PSR-0 and PSR-4 compliant class autoloading. Paths
- * for classes can be provided as base paths or prefixed class paths.
+ * The purpose autoloading classes is to load the class files only as they are
+ * needed. This reduces the overall page overhead, as every file does not need
+ * to be requested on every request. It also makes managing class loading much
+ * simpler.
  *
- * When base paths are provided, classes are searched in given paths replacing
- * all the namespace separators (and underscores in the class name) with
- * directory separators (as per PSR-0). With prefixed paths, part of the
- * namespace can be replaced with a specific path and the underscores in the
- * class name are ignored (as per PSR-4).
+ * The standard practice in autoloading is to place classes in files that are
+ * named according to the class names and placed in a directory hierarchy
+ * according to their namespace. ClassLoader supports two such standard
+ * autoloading practices: PSR-0 and PSR-4.
+ *
+ * Class paths can be provided as base paths, which are appended with the full
+ * class name (as per PSR-0), or as prefix paths that can replace part of the
+ * namespace with a specific directory (as per PSR-4). Depending on which kind
+ * of paths are added, the underscores may or may not be treated as namespace
+ * separators.
  *
  * @author Riikka Kalliomäki <riikka.kalliomaki@gmail.com>
  * @copyright Copyright (c) 2014, Riikka Kalliomäki
@@ -32,7 +39,7 @@ class ClassLoader
     /** @var boolean Whether to look for classes in include_path or not */
     private $useIncludePath;
 
-    /** @var callable The autoload method use to load classes */
+    /** @var callable The autoload method used to load classes */
     private $loader;
 
     /** @var boolean Whether loadClass should return values and throw exceptions or not */
@@ -127,16 +134,17 @@ class ClassLoader
     /**
      * Adds a PSR-0 compliant base path for searching classes.
      *
-     * In PSR-0, the class namespace structure directly reflects their location
-     * in the directory tree. Adding a base path tells the base directories
-     * where to look for classes. For example, if the class 'Foo\Bar', is
-     * located in '/usr/lib/Foo/Bar.php', you would need to add '/usr/lib' as a
-     * base path.
+     * In PSR-0, the class namespace structure directly reflects the location
+     * in the directory tree. A base path indicates the base directory where to
+     * search for classes. For example, if the class 'Foo\Bar', is defined in
+     * '/usr/lib/Foo/Bar.php', you would simply need to add the directory
+     * '/usr/lib' by calling <code>addBasePath('/usr/lib')</code>.
      *
      * Additionally, you may specify that the base path applies only to a
-     * specific namespace. For example, if in the above example, you would
-     * want the the base path to only apply to 'Foo' namespace, you could
-     * add 'Foo' as the namespace parameter.
+     * specific namespace. You can do this by adding the namespace as the second
+     * parameter. For example, if you would like the path in the previous
+     * example to only apply to the namespace 'Foo', you could do so by calling
+     * <code>addBasePath('/usr/lib/', 'Foo')</code>.
      *
      * Note that as per PSR-0, the underscores in the class name are treated
      * as namespace separators. Therefore 'Foo_Bar_Baz', would need to reside
@@ -144,11 +152,12 @@ class ClassLoader
      * by namespace separators or underscores, the namespace parameter must be
      * defined using namespace separators, e.g 'Foo\Bar'.
      *
-     * You may also provide an array of paths, instead of just single path. You
-     * may also provide an associative array where keys indicate the namespace
-     * and the values are either a single path or array of paths.
+     * In addition to providing a single path as a string, you may also provide
+     * an array of paths. It is also possible to provide an associative array
+     * where the keys indicate the namespaces. Each value in the associative
+     * array may also be a string or an array of paths.
      *
-     * @param string|array $path Single path or array of paths
+     * @param string|array $path Single path, array of paths or an associative array
      * @param string|null $namespace Limit the path only to specific namespace
      * @return ClassLoader Returns self for call chaining
      */
@@ -159,13 +168,16 @@ class ClassLoader
     }
 
     /**
-     * Returns all added base paths as an array.
+     * Returns all known base paths.
      *
-     * The paths will be returned in an associative array, in which the key
-     * represents the namespace. Paths without namespace can be found in the
-     * key '' (empty string).
+     * The paths will be returned as an associative array. The key indicates
+     * the namespace and the values are arrays that contain all paths that
+     * apply to that specific namespace. Paths that apply to all namespaces can
+     * be found inside the key '' (i.e. empty string). Note that the array does
+     * not include the paths in include_path even if the use of include_path is
+     * enabled.
      *
-     * @return mixed All added base paths.
+     * @return array All known base paths.
      */
     public function getBasePaths()
     {
@@ -173,14 +185,15 @@ class ClassLoader
     }
 
     /**
-     * Adds a PSR-4 compliant prefixed path for searching classes.
+     * Adds a PSR-4 compliant prefix path for searching classes.
      *
      * In PSR-4, it is possible to replace part of namespace with specific
      * path in the directory tree instead of requiring the entire namespace
-     * structure to be present in the namespace. For example, if the class
+     * structure to be present in the directory tree. For example, if the class
      * 'Vendor\Library\Class' is located in'/usr/lib/Library/src/Class.php',
-     * You would just need to add the path '/usr/lib/Library/src' to namespace
-     * 'Vendor\Library'.
+     * You would need to add the path '/usr/lib/Library/src' to the namespace
+     * 'Vendor\Library' by calling <code>addPrefixPath('/usr/lib/Library/src',
+     * 'Vendor\Library')</code>
      *
      * If the method is called without providing a namespace, then the paths
      * work similarly to paths added via addBasePath(), except that the
@@ -200,13 +213,16 @@ class ClassLoader
     }
 
     /**
-     * Returns all added prefix paths ar an array.
+     * Returns all known prefix paths.
      *
-     * The paths will be returned in an associative array, in which the key
-     * represents the namespace. Paths without namespace can be found in the
-     * key '' (empty string).
+     * The paths will be returned as an associative array. The key indicates
+     * the namespace and the values are arrays that contain all paths that
+     * apply to that specific namespace. Paths that apply to all namespaces can
+     * be found inside the key '' (i.e. empty string). Note that the array does
+     * not include the paths in include_path even if the use of include_path is
+     * enabled.
      *
-     * @return mixed All added prefix paths.
+     * @return array All known prefix paths.
      */
     public function getPrefixPaths()
     {
@@ -214,7 +230,7 @@ class ClassLoader
     }
 
     /**
-     * Canonizes the namespaces and paths and adds them to a list.
+     * Adds the paths to the list of paths according to the provided parameters.
      * @param string $list List of paths to modify
      * @param string|array $path Single path or array of paths
      * @param string|null $namespace The namespace definition
@@ -228,10 +244,16 @@ class ClassLoader
         }
 
         foreach ($paths as $ns => $directories) {
-            $this->addNamespacePaths($list, ltrim($ns, '0123456789'), $directories);
+            $this->addNamespacePaths($list, ltrim($ns, '0..9'), $directories);
         }
     }
 
+    /**
+     * Canonizes the namespace and adds the paths to that specific namespace.
+     * @param array $list List of paths to modify
+     * @param string $namespace Namespace for the paths
+     * @param string[] $paths List of paths for the namespace
+     */
     private function addNamespacePaths(& $list, $namespace, $paths)
     {
         $namespace = $namespace === '' ? '' : trim($namespace, '\\') . '\\';
@@ -250,20 +272,16 @@ class ClassLoader
     /**
      * Attempts to load the class using known class paths.
      *
-     * The class is first attempted to load using the prefixed paths and then
-     * using the base paths. If the use of include_path is enabled, the paths
-     * in include_path are added to the list of base paths.
-     *
-     * The classes are searched from the prefix and base paths in the order they
-     * were added to the class loader and only the first found matching file
-     * is loaded.
+     * The classes will be searched using the prefix paths, base paths and the
+     * include_path (if enabled) in that order. Other than that, the autoloader
+     * makes no guarantees about the order of the searched paths.
      *
      * If verbose mode is enabled, then the method will return true if the class
      * loading was successful and false if not. Additionally the method will
      * throw an exception if the class already exists or if the class was not
      * defined in the file that was included.
      *
-     * @param string $class Full name of the class
+     * @param string $class Full name of the class to load
      * @return boolean|null True if the class was loaded, false if not
      * @throws \RuntimeException If the class was not defined in the included file
      * @throws \InvalidArgumentException If the class already exists
@@ -281,6 +299,12 @@ class ClassLoader
         }
     }
 
+    /**
+     * Actually loads the class without any regard to verbose setting.
+     * @param string $class Full name of the class to load
+     * @return bool True if the class was loaded, false if not
+     * @throws \InvalidArgumentException If the class already exists
+     */
     private function load($class)
     {
         if ($this->isLoaded($class)) {
@@ -303,32 +327,32 @@ class ClassLoader
     {
         $class = ltrim($class, '\\');
 
-        if ($file = $this->findNamespace($this->prefixPaths, $class, true)) {
+        if ($file = $this->searchNamespaces($this->prefixPaths, $class, true)) {
             return $file;
         }
 
         $class = preg_replace('/_(?=[^\\\\]*$)/', '\\', $class);
 
-        if ($file = $this->findNamespace($this->basePaths, $class, false)) {
+        if ($file = $this->searchNamespaces($this->basePaths, $class, false)) {
             return $file;
         } elseif ($this->useIncludePath) {
-            return $this->findDirectory(explode(PATH_SEPARATOR, get_include_path()), $class);
+            return $this->searchDirectories(explode(PATH_SEPARATOR, get_include_path()), $class);
         }
 
         return false;
     }
 
     /**
-     * Attempt finding the class                                                                                                        file in namespace specific paths
-     * @param array $paths Namespace path definitions
-     * @param string $class Canonized class name
-     * @param boolean $truncate True to remove namespace from file path
+     * Searches for the class file from the namespaces that apply to the class.
+     * @param array $paths All the namespace specific paths
+     * @param string $class Canonized full class name
+     * @param boolean $truncate True to remove the namespace from the path
      * @return string|false Path to the class file or false if not found
      */
-    private function findNamespace($paths, $class, $truncate)
+    private function searchNamespaces($paths, $class, $truncate)
     {
         foreach ($paths as $namespace => $directories) {
-            if ($fullPath = $this->findFullPath($class, $namespace, $directories, $truncate)) {
+            if ($fullPath = $this->searchNamespace($class, $namespace, $directories, $truncate)) {
                 return $fullPath;
             }
         }
@@ -336,31 +360,39 @@ class ClassLoader
         return false;
     }
 
-    private function findFullPath($class, $namespace, $directories, $truncate)
+    /**
+     * Searches for the file in the list of directories, if the namespace applies.
+     * @param string $class Canonized full class name
+     * @param string $namespace Namespace that applies to the directories
+     * @param string[] $directories List of directories for the namespace
+     * @param boolean $truncate True to remove the namespace from the path
+     * @return string|false Path to the class file or false if not found
+     */
+    private function searchNamespace($class, $namespace, $directories, $truncate)
     {
         if (strncmp($class, $namespace, strlen($namespace)) !== 0) {
             return false;
         }
 
-        return $this->findDirectory(
+        return $this->searchDirectories(
             $directories,
             $truncate ? substr($class, strlen($namespace)) : $class
         );
     }
 
     /**
-     * Searches for the class file in the given directories.
+     * Searches for the class file in the list of directories.
      * @param string[] $directories List of directory paths where to look for the class
      * @param string $class Part of the class name that translates to the file name
      * @return string|false Path to the class file or false if not found
      */
-    private function findDirectory($directories, $class)
+    private function searchDirectories($directories, $class)
     {
         foreach ($directories as $directory) {
             $directory = trim($directory);
             $path = preg_replace('/[\\/\\\\]+/', DIRECTORY_SEPARATOR, $directory . '/' . $class);
 
-            if ($directory && $fullPath = $this->findExtension($path)) {
+            if ($directory && $fullPath = $this->searchExtensions($path)) {
                 return $fullPath;
             }
         }
@@ -368,7 +400,12 @@ class ClassLoader
         return false;
     }
 
-    private function findExtension($path)
+    /**
+     * Searches for the class file using known file extensions.
+     * @param string $path Path to the class file without the file extension
+     * @return string|false Path to the class file or false if not found
+     */
+    private function searchExtensions($path)
     {
         foreach ($this->fileExtensions as $ext) {
             if (file_exists($path . $ext)) {
@@ -383,7 +420,7 @@ class ClassLoader
      * Includes the file and makes sure the class exists.
      * @param string $file Full path to the file
      * @param string $class Full name of the class
-     * @return boolean Always returns true
+     * @return true Always returns true
      * @throws \RuntimeException If the class was not defined in the included file
      */
     protected function loadFile($file, $class)
@@ -400,7 +437,7 @@ class ClassLoader
     /**
      * Tells if a class, interface or trait exists with given name.
      * @param string $class Full name of the class
-     * @return boolean True if it exists, false if it does not exists
+     * @return boolean True if it exists, false if not
      */
     private function isLoaded($class)
     {

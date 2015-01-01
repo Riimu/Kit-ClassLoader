@@ -3,7 +3,7 @@
 namespace Riimu\Kit\ClassLoader;
 
 /**
- * Provides a simple method of caching list of class file locations.
+ * Provides a simple method of caching the list of class file locations.
  *
  * CacheListClassLoader provides a simple way to implement your own caching
  * handlers for the ClassLoader. The base idea of this cache is to call a
@@ -44,7 +44,7 @@ class CacheListClassLoader extends ClassLoader
      * Sets the callback used to store the cache.
      *
      * Whenever a new file location for class is found, the cache handler is
-     * called with an associative array containing the path for different
+     * called with an associative array containing the paths for different
      * classes. The cache handler should store the array and provide it in the
      * constructor in following requests.
      *
@@ -85,7 +85,7 @@ class CacheListClassLoader extends ClassLoader
      * Loads the class from the given file and stores the path into cache.
      * @param string $file Full path to the file
      * @param string $class Full name of the class
-     * @return boolean Always returns true
+     * @return true Always returns true
      * @throws \RuntimeException If the class was not defined in the included file
      */
     protected function loadFile($file, $class)
