@@ -21,6 +21,8 @@ namespace Riimu\Kit\ClassLoader;
  * of paths are added, the underscores may or may not be treated as namespace
  * separators.
  *
+ * @see http://www.php-fig.org/psr/psr-0/
+ * @see http://www.php-fig.org/psr/psr-4/
  * @author Riikka Kalliomäki <riikka.kalliomaki@gmail.com>
  * @copyright Copyright (c) 2014, Riikka Kalliomäki
  * @license http://opensource.org/licenses/mit-license.php MIT License
@@ -138,13 +140,16 @@ class ClassLoader
      * in the directory tree. A base path indicates the base directory where to
      * search for classes. For example, if the class 'Foo\Bar', is defined in
      * '/usr/lib/Foo/Bar.php', you would simply need to add the directory
-     * '/usr/lib' by calling <code>addBasePath('/usr/lib')</code>.
+     * '/usr/lib' by calling:
+     *
+     * <code>addBasePath('/usr/lib')</code>
      *
      * Additionally, you may specify that the base path applies only to a
      * specific namespace. You can do this by adding the namespace as the second
      * parameter. For example, if you would like the path in the previous
-     * example to only apply to the namespace 'Foo', you could do so by calling
-     * <code>addBasePath('/usr/lib/', 'Foo')</code>.
+     * example to only apply to the namespace 'Foo', you could do so by calling:
+     *
+     * <code>addBasePath('/usr/lib/', 'Foo')</code>
      *
      * Note that as per PSR-0, the underscores in the class name are treated
      * as namespace separators. Therefore 'Foo_Bar_Baz', would need to reside
@@ -190,10 +195,11 @@ class ClassLoader
      * In PSR-4, it is possible to replace part of namespace with specific
      * path in the directory tree instead of requiring the entire namespace
      * structure to be present in the directory tree. For example, if the class
-     * 'Vendor\Library\Class' is located in'/usr/lib/Library/src/Class.php',
+     * 'Vendor\Library\Class' is located in '/usr/lib/Library/src/Class.php',
      * You would need to add the path '/usr/lib/Library/src' to the namespace
-     * 'Vendor\Library' by calling <code>addPrefixPath('/usr/lib/Library/src',
-     * 'Vendor\Library')</code>
+     * 'Vendor\Library' by calling:
+     *
+     * <code>addPrefixPath('/usr/lib/Library/src', 'Vendor\Library')</code>
      *
      * If the method is called without providing a namespace, then the paths
      * work similarly to paths added via addBasePath(), except that the
@@ -218,9 +224,7 @@ class ClassLoader
      * The paths will be returned as an associative array. The key indicates
      * the namespace and the values are arrays that contain all paths that
      * apply to that specific namespace. Paths that apply to all namespaces can
-     * be found inside the key '' (i.e. empty string). Note that the array does
-     * not include the paths in include_path even if the use of include_path is
-     * enabled.
+     * be found inside the key '' (i.e. empty string).
      *
      * @return array All known prefix paths.
      */
