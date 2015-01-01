@@ -3,7 +3,7 @@
     "type": "library",
     "description": "PSR-0 and PSR-4 compatible class autoloader",
     "homepage": "http://kit.riimu.net",
-    "keywords": ["class", "autoloader", "psr"],
+    "keywords": ["class", "loader", "autoloader", "psr"],
     "license": "MIT",
     "authors": [
         {

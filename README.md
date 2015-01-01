@@ -75,7 +75,7 @@ be located in a file '/path/to/classes/Foo/Bar/Baz.php'. This method is usually
 the simplest way to place your class files.
 
 Using the `addBasePath()` method, you can define the base directories where to
-look for classes. The load the class mentioned above, you could use the
+look for classes. To load the class mentioned above, you could use the
 following code:
 
 ```php
@@ -90,8 +90,8 @@ $obj = new Foo\Bar\Baz();
 ```
 
 If a specific directory only applies to a specific namespace, you can use the
-second parameter to define the namespace as well. The directory still needs to
-point to the base directory for the namespace. For example:
+second parameter to define the namespace as well. However, The directory still
+needs to point to the base directory for the namespace. For example:
 
 ```php
 <?php
@@ -105,10 +105,10 @@ $obj = new Foo\Bar\Baz();
 ```
 
 Note that PSR-0 also states that underscores in the class name are treated as
-namespace separators (but not in the namespaces themselves). So, even if your
-class was called 'Foo\Bar_Baz', both of the above examples would still work.
-Regardless of whether the namespace are defined using underscore or a backslash,
-the namespace parameter in the function must use backslashes.
+namespace separators (but not underscores in namespaces). So, even if your class
+was called 'Foo\Bar_Baz', both of the above examples would still work.
+Even if your class namespaces are defined using underscores in the class name,
+you need to use backslashes in the namespace argument.
 
 ### PSR-4 class autoloading ###
 
@@ -118,7 +118,7 @@ part of the namespace can be replaced by a specific path.
 
 For example, if your class 'Foo\Bar\Baz' was located in the file
 '/path/to/Library/Baz.php', you could register the path using `addPrefixPath()`
-and load the class as demonstrated in the following example:
+and specifying the namespace as demonstrated in the following example:
 
 ```php
 <?php
@@ -131,18 +131,18 @@ $loader->register();
 $obj = new Foo\Bar\Baz();
 ```
 
-This allows shorter directory trees as the entire namespace does not need to
-be reflected in the directory structure. It's also possible to omit the
-namespace argument, in which case the path will work just like in PSR-0
-autoloading with the exception that the underscores in the class name will not
+This allows much shorter directory structures as the entire namespace does not
+need to be reflected in the directory tree. It's also possible to omit the
+namespace argument, in which case the path will work the same as paths added via
+`addBasePath()`, except for the fact that underscores in the class name will not
 be treated as namespace separators.
 
 ### Adding multiple paths ###
 
-While you could simply call the path adding methods multiple times to add
-multiple paths, it's possible to add multiple paths using an array. This usually
-makes configuration much easier. You can either add multiple base paths using a
-list like:
+While you could simply call the path adding methods multiple times, it's
+possible to add multiple paths using an array. This usually makes configuration
+much easier. For example, you could add multiple base paths by providing an
+array:
 
 ```php
 <?php
@@ -156,7 +156,7 @@ $loader->addPrefixPath([
 $loader->register();
 ```
 
-Or you can add namespace specific paths by providing an associative array that
+Or you could add namespace specific paths by providing an associative array that
 defines the namespaces using the array keys:
 
 ```php
@@ -171,23 +171,24 @@ $loader->addPrefixPath([
 $loader->register();
 ```
 
-As shown in the example above, you can also provide an array of paths for
+As shown in the example above, you can also provide an list of paths for
 specific namespace.
 
 ### Caching ###
 
 Looking for classes in the filesystem on each request is a costly affair. It is
 highly recommended to cache the file locations so that they do not need to be
-searched on every request. After all, the class file locations do not tend to
-move around in the file system.
+searched on every request. After all, the class files do not tend to move around
+in the file system.
 
 This library provides a very simple caching system via `FileCacheClassLoader`.
 The class stores the file locations in a single PHP file which is loaded on
 every request instead of searching for the files manually.
 
-The usage of the cached class loader does not differ much from using
-`ClassLoader` loader. You simply need to provide the path to a cache file that
-will be used to store the class locations in the constructor. For example:
+The usage of the `FileCacheClassLoader` does not differ much from using the
+`ClassLoader`. You simply need to provide the path to a writable cache file in
+the constructor. The file will be used to store the class locations and will be
+rewritten when new class files are discovered. For example:
 
 ```php
 <?php
