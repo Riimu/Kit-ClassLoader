@@ -1,6 +1,6 @@
 <?php
 
-include __DIR__ . '/../src/ClassLoader.php';
+require __DIR__ . '/../src/autoload.php';
 
 $loader = new Riimu\Kit\ClassLoader\ClassLoader();
 $loader->addPrefixPath(__DIR__ . '/class/', 'Vendor\MyLib');
