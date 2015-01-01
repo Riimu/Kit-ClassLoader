@@ -78,7 +78,7 @@ class FileCacheClassLoader extends CacheListClassLoader
 
     /**
      * Creates the PHP code for the class cache.
-     * @param array $cache Class location cache
+     * @param string[] $cache Class location cache
      * @return string PHP code for the cache file
      */
     private function createCache(array $cache)

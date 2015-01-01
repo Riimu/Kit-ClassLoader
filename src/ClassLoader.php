@@ -235,7 +235,7 @@ class ClassLoader
 
     /**
      * Adds the paths to the list of paths according to the provided parameters.
-     * @param string $list List of paths to modify
+     * @param array $list List of paths to modify
      * @param string|array $path Single path or array of paths
      * @param string|null $namespace The namespace definition
      */
@@ -424,7 +424,7 @@ class ClassLoader
      * Includes the file and makes sure the class exists.
      * @param string $file Full path to the file
      * @param string $class Full name of the class
-     * @return true Always returns true
+     * @return boolean Always returns true
      * @throws \RuntimeException If the class was not defined in the included file
      */
     protected function loadFile($file, $class)

@@ -85,7 +85,7 @@ class CacheListClassLoader extends ClassLoader
      * Loads the class from the given file and stores the path into cache.
      * @param string $file Full path to the file
      * @param string $class Full name of the class
-     * @return true Always returns true
+     * @return boolean Always returns true
      * @throws \RuntimeException If the class was not defined in the included file
      */
     protected function loadFile($file, $class)
