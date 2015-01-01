@@ -1,6 +1,6 @@
 # Changelog #
 
-## v4.2.0 (?) ##
+## v4.2.0 (2015-01-01) ##
 
   * ClassLoader::findFile now does a better job of canonizing directory separators
   * ClassLoader::loadFile will now always return true or throw an exception,
