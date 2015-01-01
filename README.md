@@ -45,8 +45,8 @@ $ php -r "readfile('https://getcomposer.org/installer');" | php
 $ php composer.phar require riimu/kit-classloader:4.*
 ```
 
-Alternatively, you add the dependency to your `composer.json` and run `composer
-install`. For example:
+Alternatively, you can add the dependency to your `composer.json` and run
+`composer install`. For example:
 
 ```json
 {
