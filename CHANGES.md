@@ -1,5 +1,10 @@
 # Changelog #
 
+## v4.3.0 (2015-01-08) ##
+
+  * Introduced ClassFinder for handling class file searching operations.
+  * Reduced overall code complexity.
+
 ## v4.2.0 (2015-01-01) ##
 
   * ClassLoader::findFile now does a better job of canonizing directory separators

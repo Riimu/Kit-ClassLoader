@@ -41,7 +41,7 @@ class ClassLoader
     /** @var callable The autoload method used to load classes */
     private $loader;
 
-    /** @var \Riimu\Kit\ClassLoader\FileFinder Finder used to find class files */
+    /** @var \Riimu\Kit\ClassLoader\ClassFinder Finder used to find class files */
     private $finder;
 
     /** @var boolean Whether loadClass should return values and throw exceptions or not */
@@ -57,7 +57,7 @@ class ClassLoader
         $this->useIncludePath = false;
         $this->verbose = true;
         $this->loader = [$this, 'loadClass'];
-        $this->finder = new FileFinder();
+        $this->finder = new ClassFinder();
     }
 
     /**

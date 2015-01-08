@@ -3,12 +3,12 @@
 namespace Riimu\Kit\ClassLoader;
 
 /**
- * Class for finding class files.
+ * Provides method for searching class files in the file system.
  * @author Riikka Kalliomäki <riikka.kalliomaki@gmail.com>
  * @copyright Copyright (c) 2015, Riikka Kalliomäki
  * @license http://opensource.org/licenses/mit-license.php MIT License
  */
-class FileFinder
+class ClassFinder
 {
     /** @var string[] List of file extensions used to find files */
     private $fileExtensions;
