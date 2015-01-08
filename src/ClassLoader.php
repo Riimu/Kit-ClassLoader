@@ -35,14 +35,14 @@ class ClassLoader
     /** @var array List of PSR-0 compatible paths by namespace */
     private $basePaths;
 
-    /** @var string[] List of file extensions used to find files */
-    private $fileExtensions;
-
     /** @var boolean Whether to look for classes in include_path or not */
     private $useIncludePath;
 
     /** @var callable The autoload method used to load classes */
     private $loader;
+
+    /** @var \Riimu\Kit\ClassLoader\FileFinder Finder used to find class files */
+    private $finder;
 
     /** @var boolean Whether loadClass should return values and throw exceptions or not */
     protected $verbose;
@@ -54,10 +54,10 @@ class ClassLoader
     {
         $this->prefixPaths = [];
         $this->basePaths = [];
-        $this->fileExtensions = ['.php'];
         $this->useIncludePath = false;
         $this->verbose = true;
         $this->loader = [$this, 'loadClass'];
+        $this->finder = new FileFinder();
     }
 
     /**
@@ -122,14 +122,15 @@ class ClassLoader
     /**
      * Sets list of dot included file extensions to use for finding files.
      *
-     * Defaults to ['.php']
+     * If no list of extensions is provided, the extension array defaults to
+     * just '.php'.
      *
      * @param string[] $extensions Array of dot included file extensions to use
      * @return ClassLoader Returns self for call chaining
      */
     public function setFileExtensions(array $extensions)
     {
-        $this->fileExtensions = $extensions;
+        $this->finder->setFileExtensions($extensions);
         return $this;
     }
 
@@ -329,95 +330,7 @@ class ClassLoader
      */
     public function findFile($class)
     {
-        $class = ltrim($class, '\\');
-
-        if ($file = $this->searchNamespaces($this->prefixPaths, $class, true)) {
-            return $file;
-        }
-
-        $class = preg_replace('/_(?=[^\\\\]*$)/', '\\', $class);
-
-        if ($file = $this->searchNamespaces($this->basePaths, $class, false)) {
-            return $file;
-        } elseif ($this->useIncludePath) {
-            return $this->searchDirectories(explode(PATH_SEPARATOR, get_include_path()), $class);
-        }
-
-        return false;
-    }
-
-    /**
-     * Searches for the class file from the namespaces that apply to the class.
-     * @param array $paths All the namespace specific paths
-     * @param string $class Canonized full class name
-     * @param boolean $truncate True to remove the namespace from the path
-     * @return string|false Path to the class file or false if not found
-     */
-    private function searchNamespaces($paths, $class, $truncate)
-    {
-        foreach ($paths as $namespace => $directories) {
-            if ($fullPath = $this->searchNamespace($class, $namespace, $directories, $truncate)) {
-                return $fullPath;
-            }
-        }
-
-        return false;
-    }
-
-    /**
-     * Searches for the file in the list of directories, if the namespace applies.
-     * @param string $class Canonized full class name
-     * @param string $namespace Namespace that applies to the directories
-     * @param string[] $directories List of directories for the namespace
-     * @param boolean $truncate True to remove the namespace from the path
-     * @return string|false Path to the class file or false if not found
-     */
-    private function searchNamespace($class, $namespace, $directories, $truncate)
-    {
-        if (strncmp($class, $namespace, strlen($namespace)) !== 0) {
-            return false;
-        }
-
-        return $this->searchDirectories(
-            $directories,
-            $truncate ? substr($class, strlen($namespace)) : $class
-        );
-    }
-
-    /**
-     * Searches for the class file in the list of directories.
-     * @param string[] $directories List of directory paths where to look for the class
-     * @param string $class Part of the class name that translates to the file name
-     * @return string|false Path to the class file or false if not found
-     */
-    private function searchDirectories($directories, $class)
-    {
-        foreach ($directories as $directory) {
-            $directory = trim($directory);
-            $path = preg_replace('/[\\/\\\\]+/', DIRECTORY_SEPARATOR, $directory . '/' . $class);
-
-            if ($directory && $fullPath = $this->searchExtensions($path)) {
-                return $fullPath;
-            }
-        }
-
-        return false;
-    }
-
-    /**
-     * Searches for the class file using known file extensions.
-     * @param string $path Path to the class file without the file extension
-     * @return string|false Path to the class file or false if not found
-     */
-    private function searchExtensions($path)
-    {
-        foreach ($this->fileExtensions as $ext) {
-            if (file_exists($path . $ext)) {
-                return $path . $ext;
-            }
-        }
-
-        return false;
+        return $this->finder->findFile($class, $this->prefixPaths, $this->basePaths, $this->useIncludePath);
     }
 
     /**

@@ -91,6 +91,10 @@ class ClassLoaderTest extends TestCase
         $this->assertClassLoads('pathSuccess', $loader, false);
 
         set_include_path(get_include_path() . PATH_SEPARATOR . CLASS_BASE . DIRECTORY_SEPARATOR . 'include_path');
+
+        $loader->useIncludePath(false);
+        $this->assertClassLoads('pathSuccess', $loader, false);
+        $loader->useIncludePath(true);
         $this->assertClassLoads('pathSuccess', $loader, true);
 
         set_include_path($includePath);
