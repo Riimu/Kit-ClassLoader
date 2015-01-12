@@ -1,4 +1,4 @@
-# PSR-0 and PSR-4 class autoloading #
+# PSR-0 and PSR-4 class autoloader #
 
 Classloader is a PHP library for autoloading classes. Class autoloading means
 that classes are loaded only when they are actually needed instead of having to
