@@ -1,6 +1,6 @@
 # PSR-0 and PSR-4 Class Autoloader #
 
-Classloader is a PHP library for autoloading classes. Class autoloading means
+*Classloader* is a PHP library for autoloading classes. Class autoloading means
 that classes are loaded only when they are actually needed instead of having to
 include each class file on every execution. This reduces the page loading
 overhead especially on larger websites, as only some of the class files need to
