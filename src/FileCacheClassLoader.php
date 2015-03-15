@@ -85,13 +85,13 @@ class FileCacheClassLoader extends CacheListClassLoader
     {
         ksort($cache);
 
-        $string = '<?php return [' . PHP_EOL;
         $format = "\t%s => %s," . PHP_EOL;
+        $rows = [];
 
         foreach ($cache as $key => $value) {
-            $string .= sprintf($format, var_export($key, true), var_export($value, true));
+            $rows[] = sprintf($format, var_export($key, true), var_export($value, true));
         }
 
-        return  $string . '];' . PHP_EOL;
+        return sprintf('<?php return [%s];' . PHP_EOL, PHP_EOL . implode('', $rows));
     }
 }

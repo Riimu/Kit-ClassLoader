@@ -64,21 +64,36 @@ class CacheListClassLoader extends ClassLoader
      */
     public function loadClass($class)
     {
-        if (isset($this->cache[$class])) {
-            $result = include $this->cache[$class];
+        $result = $this->loadCachedClass($class);
 
-            if ($result === false) {
-                unset($this->cache[$class]);
-                $this->saveCache();
-                $result = parent::loadClass($class);
-            }
-        } else {
+        if ($result === false) {
             $result = parent::loadClass($class);
         }
 
         if ($this->verbose) {
             return $result !== false;
         }
+    }
+
+    /**
+     * Attempts loading class from the known class cache.
+     * @param string $class Full name of the class
+     * @return boolean True if the class was loaded, false if not
+     */
+    private function loadCachedClass($class)
+    {
+        $result = false;
+
+        if (isset($this->cache[$class])) {
+            $result = include $this->cache[$class];
+
+            if ($result === false) {
+                unset($this->cache[$class]);
+                $this->saveCache();
+            }
+        }
+
+        return $result !== false;
     }
 
     /**
