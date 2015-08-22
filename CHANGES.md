@@ -1,5 +1,9 @@
 # Changelog #
 
+## v4.3.1 (2015-08-22) ##
+
+  * Addressed minor documentation and coding standards issues
+
 ## v4.3.0 (2015-01-08) ##
 
   * Introduced ClassFinder for handling class file searching operations.
