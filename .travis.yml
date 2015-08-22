@@ -20,7 +20,7 @@ install:
 
 script:
   - vendor/bin/phpunit --coverage-clover=coverage.clover
-  - vendor/bin/phpcs --standard=PSR2 src tests
+  - vendor/bin/phpcs --standard=PSR2 --ignore=tests/classes src tests
   - vendor/bin/php-cs-fixer fix --dry-run --diff
 
 after_script:

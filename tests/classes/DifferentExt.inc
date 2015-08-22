@@ -1,1 +1,5 @@
-<?php class DifferentExt {}
+<?php
+
+class DifferentExt
+{
+}

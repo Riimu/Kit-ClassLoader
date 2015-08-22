@@ -1,7 +1,7 @@
 <?php
 
 if (!class_exists('DoubleLoaded')) {
-    class DoubleLoaded { }
+    require __DIR__ . '/DoubleLoadedClass.php';
 }
 
 Riimu\Kit\ClassLoader\FileCacheClassLoaderTest::$counter++;

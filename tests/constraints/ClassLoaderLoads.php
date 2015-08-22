@@ -2,7 +2,6 @@
 
 namespace Riimu\Kit\ClassLoader\Constraint;
 
-
 /**
  * Tests if the class loader provides expected results from loading the class.
  * @author Riikka Kalliomäki <riikka.kalliomaki@gmail.com>
@@ -14,12 +13,12 @@ class ClassLoaderLoads extends \PHPUnit_Framework_Constraint
     /** @var \Riimu\Kit\ClassLoader\ClassLoader */
     private $loader;
 
-    /** @var boolean */
+    /** @var bool */
     private $loads;
 
     /**
      * @param \Riimu\Kit\ClassLoader\ClassLoader $loader
-     * @param boolean $loads
+     * @param bool $loads
      */
     public function __construct(\Riimu\Kit\ClassLoader\ClassLoader $loader, $loads)
     {
@@ -30,7 +29,7 @@ class ClassLoaderLoads extends \PHPUnit_Framework_Constraint
 
     /**
      * @param string $other
-     * @return boolean
+     * @return bool
      */
     protected function matches($other)
     {

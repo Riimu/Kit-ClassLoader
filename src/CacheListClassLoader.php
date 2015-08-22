@@ -54,13 +54,14 @@ class CacheListClassLoader extends ClassLoader
     public function setCacheHandler(callable $callback)
     {
         $this->cacheHandler = $callback;
+
         return $this;
     }
 
     /**
      * Loads the class by first checking if the file path is cached.
      * @param string $class Full name of the class
-     * @return boolean|null True if the class was loaded, false if not
+     * @return bool|null True if the class was loaded, false if not
      */
     public function loadClass($class)
     {
@@ -78,7 +79,7 @@ class CacheListClassLoader extends ClassLoader
     /**
      * Attempts loading class from the known class cache.
      * @param string $class Full name of the class
-     * @return boolean True if the class was loaded, false if not
+     * @return bool True if the class was loaded, false if not
      */
     private function loadCachedClass($class)
     {
@@ -100,7 +101,7 @@ class CacheListClassLoader extends ClassLoader
      * Loads the class from the given file and stores the path into cache.
      * @param string $file Full path to the file
      * @param string $class Full name of the class
-     * @return boolean Always returns true
+     * @return bool Always returns true
      * @throws \RuntimeException If the class was not defined in the included file
      */
     protected function loadFile($file, $class)
@@ -108,6 +109,7 @@ class CacheListClassLoader extends ClassLoader
         parent::loadFile($file, $class);
         $this->cache[$class] = $file;
         $this->saveCache();
+
         return true;
     }
 

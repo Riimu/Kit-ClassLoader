@@ -1,1 +1,5 @@
-<?php class StoreIntoCache {}
+<?php
+
+class StoreIntoCache
+{
+}

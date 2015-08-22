@@ -2,7 +2,7 @@
 
 namespace testns;
 
-class nsClass
+class NamespaceClass
 {
     public static $source = 'A';
 }

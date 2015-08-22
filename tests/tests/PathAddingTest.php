@@ -41,7 +41,7 @@ class PathAddingTest extends \PHPUnit_Framework_TestCase
     {
         $list = [
             path(['some', 'path'], true),
-            path(['other', 'path'], true)
+            path(['other', 'path'], true),
         ];
 
         $loader = new ClassLoader();
@@ -56,7 +56,7 @@ class PathAddingTest extends \PHPUnit_Framework_TestCase
     {
         $list = [
             'Foo\Bar' => path(['some', 'path'], true),
-            'Baz' => path(['other', 'path'], true)
+            'Baz'     => path(['other', 'path'], true),
         ];
 
         $loader = new ClassLoader();
@@ -64,7 +64,7 @@ class PathAddingTest extends \PHPUnit_Framework_TestCase
         $loader->addPrefixPath($list);
         $this->assertPathsAre([
             'Foo\Bar\\' => [path(['some', 'path'], true)],
-            'Baz\\' => [path(['other', 'path'], true)]
+            'Baz\\'     => [path(['other', 'path'], true)],
         ], $loader);
     }
 
@@ -80,15 +80,15 @@ class PathAddingTest extends \PHPUnit_Framework_TestCase
         $loader->addBasePath($list);
         $loader->addPrefixPath($list);
         $this->assertPathsAre([
-            '' => [path(['some', 'path'], true), path(['third', 'path'], true)],
-            'Baz\\' => [path(['other', 'path'], true)]
+            ''      => [path(['some', 'path'], true), path(['third', 'path'], true)],
+            'Baz\\' => [path(['other', 'path'], true)],
         ], $loader);
     }
 
     public function testAddingMultiplePaths()
     {
         $list = [
-            '' => [path(['some', 'path'], true), path(['third', 'path'], true)],
+            ''      => [path(['some', 'path'], true), path(['third', 'path'], true)],
             'Baz\\' => [path(['other', 'path'], true)],
         ];
 

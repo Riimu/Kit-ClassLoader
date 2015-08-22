@@ -60,6 +60,7 @@ class FileCacheClassLoaderTest extends TestCase
         $this->cachePath = __DIR__ . DIRECTORY_SEPARATOR . 'cache.php';
         $loader = new FileCacheClassLoader($this->cachePath);
         $loader->addBasePath(CLASS_BASE);
+
         return $loader;
     }
 

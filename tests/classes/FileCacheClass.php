@@ -1,1 +1,5 @@
-<?php class FileCacheClass {}
+<?php
+
+class FileCacheClass
+{
+}

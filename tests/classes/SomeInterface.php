@@ -1,1 +1,5 @@
-<?php interface SomeInterface {}
+<?php
+
+interface SomeInterface
+{
+}

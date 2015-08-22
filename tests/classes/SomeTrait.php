@@ -1,1 +1,5 @@
-<?php trait SomeTrait {}
+<?php
+
+trait SomeTrait
+{
+}

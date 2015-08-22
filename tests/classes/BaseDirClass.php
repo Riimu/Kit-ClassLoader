@@ -1,1 +1,5 @@
-<?php class BaseDirClass {}
+<?php
+
+class BaseDirClass
+{
+}

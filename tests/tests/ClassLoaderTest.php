@@ -19,7 +19,7 @@ class ClassLoaderTest extends TestCase
         $this->assertFalse($loader->isRegistered());
     }
 
-    public function testRegisteringMultipleTimes ()
+    public function testRegisteringMultipleTimes()
     {
         $loader = new ClassLoader();
         $loader->register();
@@ -29,7 +29,7 @@ class ClassLoaderTest extends TestCase
         $this->assertFalse($loader->unregister());
     }
 
-    public function testRegisteringMultipleLoaders ()
+    public function testRegisteringMultipleLoaders()
     {
         $loader = new ClassLoader();
         $loader2 = new ClassLoader();
@@ -54,7 +54,7 @@ class ClassLoaderTest extends TestCase
         $this->assertTrue($loader->unregister());
     }
 
-    public function testMissingClass ()
+    public function testMissingClass()
     {
         $loader = new ClassLoader();
         $this->assertClassLoads('ThisClassDoesNotExist', $loader, false);
@@ -75,7 +75,7 @@ class ClassLoaderTest extends TestCase
     {
         $loader = new ClassLoader();
         $loader->setVerbose(false);
-        $this->assertSame(null, $loader->loadClass('Riimu\Kit\ClassLoader\ClassLoader'));
+        $this->assertNull($loader->loadClass('Riimu\Kit\ClassLoader\ClassLoader'));
         $loader->setVerbose(true);
         $loader->loadClass('Riimu\Kit\ClassLoader\ClassLoader');
     }
@@ -108,7 +108,8 @@ class ClassLoaderTest extends TestCase
         $loader = new ClassLoader();
         $loader->addBasePath(CLASS_BASE);
         $loader->setVerbose(false);
-        $this->assertSame(null, $loader->loadClass('NoClassHere'));
+        $this->assertNull($loader->loadClass('NoClassHere'));
+
         return $loader;
     }
 
@@ -127,8 +128,8 @@ class ClassLoaderTest extends TestCase
         $loader = new ClassLoader();
         $loader->addBasePath(['testns\\' => CLASS_BASE . DIRECTORY_SEPARATOR . 'pathB' . DIRECTORY_SEPARATOR]);
         $loader->addBasePath([CLASS_BASE . DIRECTORY_SEPARATOR . 'pathA'], 'testns');
-        $this->assertClassLoads('testns\nsClass', $loader, true);
-        $this->assertSame('B', \testns\nsClass::$source);
+        $this->assertClassLoads('testns\NamespaceClass', $loader, true);
+        $this->assertSame('B', \testns\NamespaceClass::$source);
     }
 
     public function testAutoChainingDifferentTypes()

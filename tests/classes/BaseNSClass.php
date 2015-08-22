@@ -1,1 +1,5 @@
-<?php class BaseNSClass {}
+<?php
+
+class BaseNSClass
+{
+}

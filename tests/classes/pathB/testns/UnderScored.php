@@ -1,1 +1,5 @@
-<?php class pathB_testns_UnderScored {}
+<?php
+
+class pathB_testns_UnderScored
+{
+}

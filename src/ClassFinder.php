@@ -44,7 +44,7 @@ class ClassFinder
      * @param string $class Full name of the class
      * @param array $prefixPaths List of paths used for PSR-4 file search
      * @param array $basePaths List of paths used for PSR-0 file search
-     * @param boolean $useIncludePath Whether to use paths in include_path for PSR-0 search or not
+     * @param bool $useIncludePath Whether to use paths in include_path for PSR-0 search or not
      * @return string|false Path to the class file or false if not found
      */
     public function findFile($class, array $prefixPaths, array $basePaths = [], $useIncludePath = false)
@@ -68,7 +68,7 @@ class ClassFinder
      * Searches for the class file from the namespaces that apply to the class.
      * @param array $paths All the namespace specific paths
      * @param string $class Canonized full class name
-     * @param boolean $truncate True to remove the namespace from the path
+     * @param bool $truncate True to remove the namespace from the path
      * @return string|false Path to the class file or false if not found
      */
     private function searchNamespaces($paths, $class, $truncate)
@@ -88,13 +88,15 @@ class ClassFinder
      * Matches the class against the namespace and canonizes the name as needed.
      * @param string $namespace Namespace to match against
      * @param string $class Full name of the class
-     * @param boolean $truncate Whether to remove the namespace from the class
+     * @param bool $truncate Whether to remove the namespace from the class
      * @return string|false Canonized class name or false if it does not match the namespace
      */
     private function canonizeClass($namespace, $class, $truncate)
     {
         $class = ltrim($class, '\\');
-        $namespace = $namespace == '' ? '' : trim($namespace, '\\') . '\\';
+        $namespace = (string) $namespace;
+
+        $namespace = $namespace === '' ? '' : trim($namespace, '\\') . '\\';
 
         if (strncmp($class, $namespace, strlen($namespace)) !== 0) {
             return false;

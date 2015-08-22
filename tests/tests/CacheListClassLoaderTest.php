@@ -18,7 +18,11 @@ class CacheListClassLoaderTest extends TestCase
             $result = $cache;
         });
         $loader->loadClass('StoreIntoCache');
-        $this->assertEquals(['StoreIntoCache' => CLASS_BASE . DIRECTORY_SEPARATOR . 'StoreIntoCache.php'], $result);
+
+        $this->assertSame(
+            ['StoreIntoCache' => CLASS_BASE . DIRECTORY_SEPARATOR . 'StoreIntoCache.php'],
+            $result
+        );
     }
 
     public function testFailLoadingFile()
@@ -40,7 +44,7 @@ class CacheListClassLoaderTest extends TestCase
         });
         $loader->setVerbose(true);
         $this->assertFalse(@$loader->loadClass('NonExistentClass'));
-        $this->assertEquals([], $result);
+        $this->assertSame([], $result);
     }
 
     public function testLoadingBadFile()

@@ -35,7 +35,7 @@ class ClassLoader
     /** @var array List of PSR-0 compatible paths by namespace */
     private $basePaths;
 
-    /** @var boolean Whether to look for classes in include_path or not */
+    /** @var bool Whether to look for classes in include_path or not */
     private $useIncludePath;
 
     /** @var callable The autoload method used to load classes */
@@ -44,7 +44,7 @@ class ClassLoader
     /** @var \Riimu\Kit\ClassLoader\ClassFinder Finder used to find class files */
     private $finder;
 
-    /** @var boolean Whether loadClass should return values and throw exceptions or not */
+    /** @var bool Whether loadClass should return values and throw exceptions or not */
     protected $verbose;
 
     /**
@@ -62,7 +62,7 @@ class ClassLoader
 
     /**
      * Registers this instance as a class autoloader.
-     * @return boolean True if the registration was successful, false if not
+     * @return bool True if the registration was successful, false if not
      */
     public function register()
     {
@@ -71,7 +71,7 @@ class ClassLoader
 
     /**
      * Unregisters this instance as a class autoloader.
-     * @return boolean True if the unregistration was successful, false if not
+     * @return bool True if the unregistration was successful, false if not
      */
     public function unregister()
     {
@@ -80,7 +80,7 @@ class ClassLoader
 
     /**
      * Tells if this instance is currently registered as a class autoloader.
-     * @return boolean True if registered, false if not
+     * @return bool True if registered, false if not
      */
     public function isRegistered()
     {
@@ -94,12 +94,13 @@ class ClassLoader
      * paths where to look for classes. This option defaults to false for PSR-4
      * compliance.
      *
-     * @param boolean $enabled True to use include_path, false to not use
+     * @param bool $enabled True to use include_path, false to not use
      * @return ClassLoader Returns self for call chaining
      */
     public function useIncludePath($enabled = true)
     {
         $this->useIncludePath = (bool) $enabled;
+
         return $this;
     }
 
@@ -110,12 +111,13 @@ class ClassLoader
      * exceptions from the autoloader. By default, the verbose mode is set to
      * false for PSR-4 compliance.
      *
-     * @param boolean $enabled True to return values and exceptions, false to not
+     * @param bool $enabled True to return values and exceptions, false to not
      * @return ClassLoader Returns self for call chaining
      */
     public function setVerbose($enabled)
     {
         $this->verbose = (bool) $enabled;
+
         return $this;
     }
 
@@ -131,6 +133,7 @@ class ClassLoader
     public function setFileExtensions(array $extensions)
     {
         $this->finder->setFileExtensions($extensions);
+
         return $this;
     }
 
@@ -170,6 +173,7 @@ class ClassLoader
     public function addBasePath($path, $namespace = null)
     {
         $this->addPath($this->basePaths, $path, $namespace);
+
         return $this;
     }
 
@@ -216,6 +220,7 @@ class ClassLoader
     public function addPrefixPath($path, $namespace = null)
     {
         $this->addPath($this->prefixPaths, $path, $namespace);
+
         return $this;
     }
 
@@ -287,7 +292,7 @@ class ClassLoader
      * defined in the file that was included.
      *
      * @param string $class Full name of the class to load
-     * @return boolean|null True if the class was loaded, false if not
+     * @return bool|null True if the class was loaded, false if not
      * @throws \RuntimeException If the class was not defined in the included file
      * @throws \InvalidArgumentException If the class already exists
      */
@@ -337,7 +342,7 @@ class ClassLoader
      * Includes the file and makes sure the class exists.
      * @param string $file Full path to the file
      * @param string $class Full name of the class
-     * @return boolean Always returns true
+     * @return bool Always returns true
      * @throws \RuntimeException If the class was not defined in the included file
      */
     protected function loadFile($file, $class)
@@ -354,7 +359,7 @@ class ClassLoader
     /**
      * Tells if a class, interface or trait exists with given name.
      * @param string $class Full name of the class
-     * @return boolean True if it exists, false if not
+     * @return bool True if it exists, false if not
      */
     private function isLoaded($class)
     {

@@ -1,1 +1,7 @@
-<?php namespace FooBar\Testns; class PrefClassB {}
+<?php
+
+namespace FooBar\Testns;
+
+class PrefClassB
+{
+}

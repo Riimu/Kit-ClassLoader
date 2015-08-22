@@ -13,11 +13,11 @@ class TestCase extends \PHPUnit_Framework_TestCase
      * Attempts to load the class and check if it exists.
      * @param string $class Name of the class to attempt loading
      * @param ClassLoader $loader ClassLoader to use
-     * @param boolean $loads Whether the class should load successfully or not
+     * @param bool $loads Whether the class should load successfully or not
      * @param string $message Optional message to display on failure
      * @throws \PHPUnit_Framework_Exception If invalid arguments are given
      */
-    public static function assertClassLoads ($class, ClassLoader $loader, $loads = true, $message = '')
+    public static function assertClassLoads($class, ClassLoader $loader, $loads = true, $message = '')
     {
         if (!is_string($class)) {
             throw \PHPUnit_Util_InvalidArgumentHelper::factory(1, 'string', $class);

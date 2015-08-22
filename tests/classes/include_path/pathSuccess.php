@@ -1,1 +1,5 @@
-<?php class PathSuccess {}
+<?php
+
+class PathSuccess
+{
+}

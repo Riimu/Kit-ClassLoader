@@ -1,5 +1,6 @@
 <?php
 
-class SomeClass implements SomeInterface {
+class SomeClass implements SomeInterface
+{
     use SomeTrait;
 }

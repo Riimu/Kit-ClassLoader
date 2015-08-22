@@ -1,1 +1,7 @@
-<?php namespace FooBar; class PrefClassA {}
+<?php
+
+namespace FooBar;
+
+class PrefClassA
+{
+}
