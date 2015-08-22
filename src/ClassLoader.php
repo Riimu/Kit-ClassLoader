@@ -318,7 +318,10 @@ class ClassLoader
     private function load($class)
     {
         if ($this->isLoaded($class)) {
-            throw new \InvalidArgumentException("Attempting to load class '$class' that already exists'");
+            throw new \InvalidArgumentException(sprintf(
+                "Error loading class '%s', the class already exists",
+                $class
+            ));
         }
 
         if ($file = $this->findFile($class)) {
@@ -350,7 +353,10 @@ class ClassLoader
         include $file;
 
         if (!$this->isLoaded($class)) {
-            throw new \RuntimeException("The included '$file' did not define class '$class'");
+            throw new \RuntimeException(vsprintf(
+                "Error loading class '%s', the class was not defined in the file '%s'",
+                [$class, $file]
+            ));
         }
 
         return true;
