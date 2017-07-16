@@ -48,7 +48,7 @@ class CacheListClassLoader extends ClassLoader
      * classes. The cache handler should store the array and provide it in the
      * constructor in following requests.
      *
-     * @param callable $callback Callback for storing cache.
+     * @param callable $callback Callback for storing cache
      * @return CacheListClassLoader Returns self for call chaining
      */
     public function setCacheHandler(callable $callback)

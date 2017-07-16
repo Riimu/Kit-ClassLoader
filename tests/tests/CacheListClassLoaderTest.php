@@ -2,6 +2,8 @@
 
 namespace Riimu\Kit\ClassLoader;
 
+use Riimu\Kit\ClassLoader\Test\TestCase;
+
 /**
  * @author Riikka Kalliomäki <riikka.kalliomaki@gmail.com>
  * @copyright Copyright (c) 2013, Riikka Kalliomäki
@@ -17,7 +19,7 @@ class CacheListClassLoaderTest extends TestCase
         $loader->setCacheHandler(function ($cache) use (& $result) {
             $result = $cache;
         });
-        $loader->loadClass('StoreIntoCache');
+        $loader->loadClass(\StoreIntoCache::class);
 
         $this->assertSame(
             ['StoreIntoCache' => CLASS_BASE . DIRECTORY_SEPARATOR . 'StoreIntoCache.php'],
@@ -49,7 +51,11 @@ class CacheListClassLoaderTest extends TestCase
 
     public function testLoadingBadFile()
     {
-        $loader = $this->getMock('Riimu\Kit\ClassLoader\CacheListClassLoader', ['saveCache'], [[]]);
+        $loader = $this->getMockBuilder(CacheListClassLoader::class)
+            ->setMethods(['saveCache'])
+            ->setConstructorArgs([[]])
+            ->getMock();
+
         $loader->expects($this->never())->method('saveCache');
         $loader->setVerbose(false);
         $loader->addBasePath(CLASS_BASE);
@@ -60,6 +66,6 @@ class CacheListClassLoaderTest extends TestCase
     {
         $loader = new CacheListClassLoader(['CachedClass' => CLASS_BASE . DIRECTORY_SEPARATOR . 'CachedClass.php']);
         $loader->setVerbose(true);
-        $this->assertTrue($loader->loadClass('CachedClass'));
+        $this->assertTrue($loader->loadClass(\CachedClass::class));
     }
 }

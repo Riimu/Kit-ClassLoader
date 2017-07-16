@@ -1,6 +1,6 @@
 <?php
 
-require __DIR__ . '/../src/autoload.php';
+require_once __DIR__ . '/../vendor/autoload.php';
 
 $loader = new Riimu\Kit\ClassLoader\ClassLoader();
 $loader->addBasePath(__DIR__ . '/class/', 'Vendor');

@@ -2,6 +2,12 @@
 
 namespace Riimu\Kit\ClassLoader;
 
+use FooBar\PrefClassA;
+use FooBar\Testns\PrefClassB;
+use Riimu\Kit\ClassLoader\Test\TestCase;
+use testns\NamespaceClass;
+use under_ns\under_class;
+
 /**
  * @author Riikka Kalliomäki <riikka.kalliomaki@gmail.com>
  * @copyright Copyright (c) 2013, Riikka Kalliomäki
@@ -46,8 +52,11 @@ class ClassLoaderTest extends TestCase
 
     public function testCallingAutoloadCall()
     {
-        $loader = $this->getMock('Riimu\Kit\ClassLoader\ClassLoader', ['loadClass']);
-        $loader->expects($this->once())->method('loadClass')->will($this->returnValue(false));
+        $loader = $this->getMockBuilder(ClassLoader::class)
+            ->setMethods(['loadClass'])
+            ->getMock();
+
+        $loader->expects($this->once())->method('loadClass')->willReturn(false);
 
         $this->assertTrue($loader->register());
         $this->assertFalse(class_exists('ThisClassDoesNotExist'));
@@ -63,9 +72,9 @@ class ClassLoaderTest extends TestCase
     public function testBasePath()
     {
         $loader = new ClassLoader();
-        $this->assertClassLoads('BaseDirClass', $loader, false);
+        $this->assertClassLoads(\BaseDirClass::class, $loader, false);
         $loader->addBasePath(CLASS_BASE);
-        $this->assertClassLoads('BaseDirClass', $loader, true);
+        $this->assertClassLoads(\BaseDirClass::class, $loader, true);
     }
 
     /**
@@ -75,9 +84,9 @@ class ClassLoaderTest extends TestCase
     {
         $loader = new ClassLoader();
         $loader->setVerbose(false);
-        $this->assertNull($loader->loadClass('Riimu\Kit\ClassLoader\ClassLoader'));
+        $this->assertNull($loader->loadClass(ClassLoader::class));
         $loader->setVerbose(true);
-        $loader->loadClass('Riimu\Kit\ClassLoader\ClassLoader');
+        $loader->loadClass(ClassLoader::class);
     }
 
     public function testLoadingViaIncludePath()
@@ -86,16 +95,16 @@ class ClassLoaderTest extends TestCase
         $includePath = get_include_path();
 
         $loader->useIncludePath(false);
-        $this->assertClassLoads('PathSuccess', $loader, false);
+        $this->assertClassLoads(\PathSuccess::class, $loader, false);
         $loader->useIncludePath(true);
-        $this->assertClassLoads('PathSuccess', $loader, false);
+        $this->assertClassLoads(\PathSuccess::class, $loader, false);
 
         set_include_path(get_include_path() . PATH_SEPARATOR . CLASS_BASE . DIRECTORY_SEPARATOR . 'include_path');
 
         $loader->useIncludePath(false);
-        $this->assertClassLoads('PathSuccess', $loader, false);
+        $this->assertClassLoads(\PathSuccess::class, $loader, false);
         $loader->useIncludePath(true);
-        $this->assertClassLoads('PathSuccess', $loader, true);
+        $this->assertClassLoads(\PathSuccess::class, $loader, true);
 
         set_include_path($includePath);
     }
@@ -114,6 +123,7 @@ class ClassLoaderTest extends TestCase
     }
 
     /**
+     * @param ClassLoader $loader
      * @depends testMissingClassWithoutException
      * @expectedException \RuntimeException
      */
@@ -128,8 +138,8 @@ class ClassLoaderTest extends TestCase
         $loader = new ClassLoader();
         $loader->addBasePath(['testns\\' => CLASS_BASE . DIRECTORY_SEPARATOR . 'pathB' . DIRECTORY_SEPARATOR]);
         $loader->addBasePath([CLASS_BASE . DIRECTORY_SEPARATOR . 'pathA'], 'testns');
-        $this->assertClassLoads('testns\NamespaceClass', $loader, true);
-        $this->assertSame('B', \testns\NamespaceClass::$source);
+        $this->assertClassLoads(NamespaceClass::class, $loader, true);
+        $this->assertSame('B', NamespaceClass::$source);
     }
 
     public function testAutoChainingDifferentTypes()
@@ -137,9 +147,9 @@ class ClassLoaderTest extends TestCase
         $loader = new ClassLoader();
         $loader->addBasePath(CLASS_BASE);
         $loader->register();
-        $this->assertTrue(class_exists('SomeClass', true));
-        $this->assertTrue(interface_exists('SomeInterface', false));
-        $this->assertTrue(trait_exists('SomeTrait', false));
+        $this->assertTrue(class_exists(\SomeClass::class, true));
+        $this->assertTrue(interface_exists(\SomeInterface::class, false));
+        $this->assertTrue(trait_exists(\SomeTrait::class, false));
         $loader->unregister();
     }
 
@@ -148,7 +158,7 @@ class ClassLoaderTest extends TestCase
         $loader = new ClassLoader();
         $loader->addBasePath(CLASS_BASE);
         $loader->setFileExtensions(['.inc']);
-        $this->assertClassLoads('DifferentExt', $loader, true);
+        $this->assertClassLoads(\DifferentExt::class, $loader, true);
     }
 
     public function testMissingFromNamespace()
@@ -162,9 +172,9 @@ class ClassLoaderTest extends TestCase
     {
         $loader = new ClassLoader();
         $loader->addBasePath(CLASS_BASE, 'pathB\testns');
-        $this->assertClassLoads('pathB_testns_UnderScored', $loader, true);
+        $this->assertClassLoads(\pathB_testns_UnderScored::class, $loader, true);
         $loader->addBasePath(CLASS_BASE);
-        $this->assertClassLoads('under_ns\under_class', $loader, true);
+        $this->assertClassLoads(under_class::class, $loader, true);
     }
 
     public function testPrefixClassLoading()
@@ -173,8 +183,8 @@ class ClassLoaderTest extends TestCase
         $loader->addPrefixPath(CLASS_BASE . DIRECTORY_SEPARATOR . 'pathA', 'FooBar');
         $loader->addPrefixPath([CLASS_BASE . DIRECTORY_SEPARATOR . 'pathB'], 'FooBar');
         $this->assertClassLoads('FooBar\IsNotClass', $loader, false);
-        $this->assertClassLoads('\FooBar\PrefClassA', $loader, true);
-        $this->assertClassLoads('FooBar\testns\PrefClassB', $loader, true);
+        $this->assertClassLoads(PrefClassA::class, $loader, true);
+        $this->assertClassLoads(PrefClassB::class, $loader, true);
     }
 
     public function testFindingEmptyClass()

@@ -187,7 +187,7 @@ class ClassLoader
      * not include the paths in include_path even if the use of include_path is
      * enabled.
      *
-     * @return array All known base paths.
+     * @return array All known base paths
      */
     public function getBasePaths()
     {
@@ -232,7 +232,7 @@ class ClassLoader
      * apply to that specific namespace. Paths that apply to all namespaces can
      * be found inside the key '' (i.e. empty string).
      *
-     * @return array All known prefix paths.
+     * @return array All known prefix paths
      */
     public function getPrefixPaths()
     {

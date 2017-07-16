@@ -2,12 +2,14 @@
 
 namespace Riimu\Kit\ClassLoader;
 
+use PHPUnit\Framework\TestCase;
+
 /**
  * @author Riikka Kalliomäki <riikka.kalliomaki@gmail.com>
  * @copyright Copyright (c) 2014, Riikka Kalliomäki
  * @license http://opensource.org/licenses/mit-license.php MIT License
  */
-class PathAddingTest extends \PHPUnit_Framework_TestCase
+class PathAddingTest extends TestCase
 {
     public function testDirectorySeparatorCanonization()
     {
@@ -113,7 +115,11 @@ class PathAddingTest extends \PHPUnit_Framework_TestCase
         ], $loader);
     }
 
-    public function assertPathsAre($expected, $loader)
+    /**
+     * @param array $expected
+     * @param ClassLoader $loader
+     */
+    public function assertPathsAre(array $expected, $loader)
     {
         $this->assertSame($expected, $loader->getBasePaths());
         $this->assertSame($expected, $loader->getPrefixPaths());

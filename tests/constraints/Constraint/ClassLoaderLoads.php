@@ -1,6 +1,9 @@
 <?php
 
-namespace Riimu\Kit\ClassLoader\Constraint;
+namespace Riimu\Kit\ClassLoader\Test\Constraint;
+
+use PHPUnit\Framework\Constraint\Constraint;
+use Riimu\Kit\ClassLoader\ClassLoader;
 
 /**
  * Tests if the class loader provides expected results from loading the class.
@@ -8,19 +11,19 @@ namespace Riimu\Kit\ClassLoader\Constraint;
  * @copyright Copyright (c) 2014, Riikka Kalliomäki
  * @license http://opensource.org/licenses/MIT MIT License
  */
-class ClassLoaderLoads extends \PHPUnit_Framework_Constraint
+class ClassLoaderLoads extends Constraint
 {
-    /** @var \Riimu\Kit\ClassLoader\ClassLoader */
+    /** @var ClassLoader */
     private $loader;
 
     /** @var bool */
     private $loads;
 
     /**
-     * @param \Riimu\Kit\ClassLoader\ClassLoader $loader
+     * @param ClassLoader $loader
      * @param bool $loads
      */
-    public function __construct(\Riimu\Kit\ClassLoader\ClassLoader $loader, $loads)
+    public function __construct(ClassLoader $loader, $loads)
     {
         parent::__construct();
         $this->loader = $loader;
@@ -35,7 +38,9 @@ class ClassLoaderLoads extends \PHPUnit_Framework_Constraint
     {
         if ($this->loader->loadClass($other) !== $this->loads) {
             return false;
-        } elseif (class_exists($other, false) !== $this->loads) {
+        }
+
+        if (class_exists($other, false) !== $this->loads) {
             return false;
         }
 

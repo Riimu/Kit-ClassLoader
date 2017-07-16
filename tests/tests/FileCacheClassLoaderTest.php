@@ -2,6 +2,8 @@
 
 namespace Riimu\Kit\ClassLoader;
 
+use Riimu\Kit\ClassLoader\Test\TestCase;
+
 /**
  * @author Riikka Kalliomäki <riikka.kalliomaki@gmail.com>
  * @copyright Copyright (c) 2014, Riikka Kalliomäki
@@ -34,7 +36,7 @@ class FileCacheClassLoaderTest extends TestCase
     {
         $loader = $this->getLoader();
         $loader->register();
-        $this->assertTrue(class_exists('FileCacheClass'));
+        $this->assertTrue(class_exists(\FileCacheClass::class));
         $file = $loader->getCacheFile();
         $this->destroy($loader);
         $this->assertFileExists($file);
@@ -43,17 +45,20 @@ class FileCacheClassLoaderTest extends TestCase
     public function testSavingAndLoading()
     {
         $loader = $this->getLoader();
-        $loader->loadClass('DoubleLoaded');
+        $loader->loadClass(\DoubleLoaded::class);
         $this->destroy($loader);
 
-        $loaderB = $this->getMock('Riimu\Kit\ClassLoader\FileCacheClassLoader', ['storeCache'], [$this->cachePath]);
+        $loaderB = $this->getMockBuilder(FileCacheClassLoader::class)
+            ->setMethods(['storeCache'])
+            ->setConstructorArgs([$this->cachePath])
+            ->getMock();
         $loaderB->expects($this->never())->method('storeCache');
-        $loaderB->loadClass('DoubleLoaded');
+        $loaderB->loadClass(\DoubleLoaded::class);
         $this->assertSame(2, self::$counter);
     }
 
     /**
-     * @return \Riimu\Kit\ClassLoader\FileCacheClassLoader
+     * @return FileCacheClassLoader
      */
     private function getLoader()
     {
