@@ -3,7 +3,7 @@
 namespace Riimu\Kit\ClassLoader;
 
 use FooBar\PrefClassA;
-use FooBar\Testns\PrefClassB;
+use FooBar\testns\PrefClassB;
 use Riimu\Kit\ClassLoader\Test\TestCase;
 use testns\NamespaceClass;
 use under_ns\under_class;
