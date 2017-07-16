@@ -27,7 +27,7 @@ at: http://kit.riimu.net/api/classloader/
 [![Travis](https://img.shields.io/travis/Riimu/Kit-ClassLoader.svg?style=flat-square)](https://travis-ci.org/Riimu/Kit-ClassLoader)
 [![Scrutinizer](https://img.shields.io/scrutinizer/g/Riimu/Kit-ClassLoader.svg?style=flat-square)](https://scrutinizer-ci.com/g/Riimu/Kit-ClassLoader/)
 [![Scrutinizer Coverage](https://img.shields.io/scrutinizer/coverage/g/Riimu/Kit-ClassLoader.svg?style=flat-square)](https://scrutinizer-ci.com/g/Riimu/Kit-ClassLoader/)
-[![Packagist](https://img.shields.io/packagist/v/riimu/riimu/kit-classloader.svg?style=flat-square)](https://packagist.org/packages/riimu/kit-classloader)
+[![Packagist](https://img.shields.io/packagist/v/riimu/kit-classloader.svg?style=flat-square)](https://packagist.org/packages/riimu/kit-classloader)
 
 ## Requirements ##
 
