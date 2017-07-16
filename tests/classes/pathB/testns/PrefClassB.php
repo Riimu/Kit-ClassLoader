@@ -1,6 +1,6 @@
 <?php
 
-namespace FooBar\Testns;
+namespace FooBar\testns;
 
 class PrefClassB
 {
