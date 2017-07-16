@@ -2,6 +2,7 @@
 
 ## v4.4.0 (2017-07-16) ##
 
+  * Increase minimum required PHP version 5.6
   * Ensure that unit tests also work in PHPUnit6
   * Improve the bundled autoloader script slightly
   * Update to latest coding standards
