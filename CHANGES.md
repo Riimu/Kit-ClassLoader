@@ -1,5 +1,12 @@
 # Changelog #
 
+## v4.4.0 (2017-07-16) ##
+
+  * Ensure that unit tests also work in PHPUnit6
+  * Improve the bundled autoloader script slightly
+  * Update to latest coding standards
+  * Add PHP 7.1 tests to travis build
+
 ## v4.3.1 (2015-08-22) ##
 
   * Addressed minor documentation and coding standards issues

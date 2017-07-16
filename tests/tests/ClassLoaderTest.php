@@ -28,11 +28,10 @@ class ClassLoaderTest extends TestCase
     public function testRegisteringMultipleTimes()
     {
         $loader = new ClassLoader();
-        $loader->register();
+        $this->assertTrue($loader->register());
         $this->assertTrue($loader->register());
         $this->assertTrue($loader->unregister());
         $this->assertFalse($loader->isRegistered());
-        $this->assertFalse($loader->unregister());
     }
 
     public function testRegisteringMultipleLoaders()
