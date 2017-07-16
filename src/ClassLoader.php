@@ -24,7 +24,7 @@ namespace Riimu\Kit\ClassLoader;
  * @see http://www.php-fig.org/psr/psr-0/
  * @see http://www.php-fig.org/psr/psr-4/
  * @author Riikka Kalliomäki <riikka.kalliomaki@gmail.com>
- * @copyright Copyright (c) 2014, Riikka Kalliomäki
+ * @copyright Copyright (c) 2014-2017 Riikka Kalliomäki
  * @license http://opensource.org/licenses/mit-license.php MIT License
  */
 class ClassLoader

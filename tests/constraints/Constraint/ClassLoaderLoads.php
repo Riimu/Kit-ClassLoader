@@ -8,7 +8,7 @@ use Riimu\Kit\ClassLoader\ClassLoader;
 /**
  * Tests if the class loader provides expected results from loading the class.
  * @author Riikka Kalliomäki <riikka.kalliomaki@gmail.com>
- * @copyright Copyright (c) 2014, Riikka Kalliomäki
+ * @copyright Copyright (c) 2017 Riikka Kalliomäki
  * @license http://opensource.org/licenses/MIT MIT License
  */
 class ClassLoaderLoads extends Constraint

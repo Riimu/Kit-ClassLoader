@@ -9,7 +9,7 @@ use Riimu\Kit\ClassLoader\ClassLoader;
 
 /**
  * @author Riikka Kalliomäki <riikka.kalliomaki@gmail.com>
- * @copyright Copyright (c) 2014, Riikka Kalliomäki
+ * @copyright Copyright (c) 2014-2017 Riikka Kalliomäki
  * @license http://opensource.org/licenses/MIT MIT License
  */
 class TestCase extends PhpUnitTestCase
